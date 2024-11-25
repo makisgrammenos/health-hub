@@ -1,0 +1,2 @@
+backend/models/diabetic_retinopathy/checkpoint.chk
+backend/models/brain_tumor_segmentation/model.pt
