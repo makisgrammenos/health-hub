@@ -13,7 +13,10 @@ export default function BrainTumorSegmentation() {
     T2: null,
     FLAIR: null,
   });
-  const [segmentationResult, setSegmentationResult] = useState(null);
+  const [segmentationResult, setSegmentationResult] = useState<{
+    segmented_slices: string[];
+    download_url: string;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +39,7 @@ export default function BrainTumorSegmentation() {
     });
 
     try {
-      const response = await axios.post('/api/brain-tumor-segment', formData, {
+      const response = await axios.post('http://localhost:8000/imaging/brain-tumor/segment', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setSegmentationResult(response.data);
@@ -58,7 +61,7 @@ export default function BrainTumorSegmentation() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-6">Step 1: Upload MRI Modalities</h2>
         <p className="mb-6 text-gray-600">
-          Upload the four MRI modalities (**T1c, T1, T2, FLAIR**) as NIfTI (.nii, .nii.gz) files.
+          Upload the four MRI modalities (T1c, T1, T2, FLAIR) as NIfTI (.nii, .nii.gz) files.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {['T1c', 'T1', 'T2', 'FLAIR'].map((modality) => (
@@ -108,7 +111,7 @@ export default function BrainTumorSegmentation() {
               View the segmented slices below or download the full segmentation results.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {segmentationResult.segmented_slices.map((slice: string, idx: number) => (
+              {segmentationResult.segmented_slices.map((slice, idx) => (
                 <Card key={idx} shadow="sm" className="flex flex-col items-center p-4">
                   <CardBody>
                     <img

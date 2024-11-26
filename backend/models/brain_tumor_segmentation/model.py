@@ -29,7 +29,7 @@ def load_model():
     return model
 
 # Perform segmentation
-async def segment_brain_tumor(file_paths, model):
+def segment_brain_tumor(file_paths, model):
     """
     Perform segmentation on the provided MRI modalities.
     """

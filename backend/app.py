@@ -25,7 +25,7 @@ app.add_middleware(
 
 # Include routers for each model
 app.include_router(diabetic_retinopathy.router, prefix="/imaging/diabetic-retinopathy", tags=["Diabetic Retinopathy"])
-app.include_router(brain_tumor_segmentation.router, prefix="/imaging/brain-tumor-seg", tags=["Brain Tumor Segmentation"])
+app.include_router(brain_tumor_segmentation.router, prefix="/imaging/brain-tumor", tags=["Brain Tumor Segmentation"])
 
 @app.get("/")
 async def root():
