@@ -3,11 +3,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Card, CardBody, CardFooter } from '@nextui-org/card';
-import { Button } from '@nextui-org/button';
-import { Progress } from '@nextui-org/progress';
-import { Table } from '@nextui-org/table';
+import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from '@nextui-org/table';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import Image from 'next/image';
-
+import { Button } from '@nextui-org/button';
 export default function ChestXRayClassification() {
   const [activeTab, setActiveTab] = useState('single');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -48,10 +47,10 @@ export default function ChestXRayClassification() {
 
     try {
       setLoading(true);
-      const response = await axios.post('/api/chest-xray/predict', formData, {
+      const response = await axios.post('http://localhost:8000/imaging/chest-x-ray/predict', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setPredictionResults(response.data.results);
+      setPredictionResults(response.data.predictions);
     } catch (err) {
       setError('Error occurred while predicting the image.');
     } finally {
@@ -70,7 +69,7 @@ export default function ChestXRayClassification() {
 
     try {
       setLoading(true);
-      const response = await axios.post('/api/chest-xray/batch-predict', formData, {
+      const response = await axios.post('http://localhost:8000/imaging/chest-x-ray/predict', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setBatchResults(response.data.predictions);
@@ -80,6 +79,26 @@ export default function ChestXRayClassification() {
       setLoading(false);
     }
   };
+
+  const transformPredictionDataForChart = () => {
+    return predictionResults.map((result: any) => ({
+      name: result.Pathology,
+      probability: parseFloat(result.Probability.replace('%', '')),
+    }));
+  };
+
+  const getTopPrediction = () => {
+    if (predictionResults.length === 0) return null;
+    return predictionResults.reduce((top, current) =>
+      parseFloat(current.Probability.replace('%', '')) > parseFloat(top.Probability.replace('%', '')) ? current : top
+    );
+  };
+
+  const COLORS = [
+    '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF6361', '#FFD700', '#FF4500', '#32CD32', '#6A5ACD',
+  ];
+
+  const topPrediction = getTopPrediction();
 
   return (
     <div className="max-w-7xl mx-auto p-8">
@@ -139,74 +158,94 @@ export default function ChestXRayClassification() {
           )}
 
           {predictionResults.length > 0 && (
-            <Table
-              aria-label="Prediction Results"
-              className="mt-6"
-            >
-              <thead>
-                <tr>
-                  <th>Pathology</th>
-                  <th>Probability</th>
-                </tr>
-              </thead>
-              <tbody>
-                {predictionResults.map((result: any, idx: number) => (
-                  <tr key={idx}>
-                    <td>{result.Pathology}</td>
-                    <td>{result.Probability}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
+            <div>
+              <h3 className="text-lg font-bold mb-4">Visualization</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+  {/* Bar Chart */}
+  <div className="h-[500px] w-full">
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={transformPredictionDataForChart()} barCategoryGap="10%">
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Bar
+          dataKey="probability"
+          fill="#8884d8"
+          label={{ position: 'top', fontSize: 12 }}
+        >
+          {transformPredictionDataForChart().map((entry, index) => (
+            <Cell
+              key={`cell-${index}`}
+              fill={
+                topPrediction && entry.name === topPrediction.Pathology
+                  ? '#FF0000'
+                  : COLORS[index % COLORS.length]
+              }
+            />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
 
-          {error && <p className="text-red-600 mt-4 text-center">{error}</p>}
-        </section>
-      )}
+  {/* Donut Chart */}
+  <div className="h-[500px] w-full">
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie
+          data={transformPredictionDataForChart()}
+          dataKey="probability"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          outerRadius={180}
+          innerRadius={100} // Donut effect
+          fill="#8884d8"
+          label={({ name, probability }) => `${name}: ${probability.toFixed(1)}%`}
+          labelLine={false}
+        >
+          {transformPredictionDataForChart().map((entry, index) => (
+            <Cell
+              key={`cell-${index}`}
+              fill={
+                topPrediction && entry.name === topPrediction.Pathology
+                  ? '#FF0000'
+                  : COLORS[index % COLORS.length]
+              }
+            />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend verticalAlign="bottom" height={36} />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
+</div>
 
-      {activeTab === 'batch' && (
-        <section>
-          <h2 className="text-2xl font-bold mb-6">Batch Prediction</h2>
-          <input
-            type="file"
-            accept=".zip"
-            onChange={handleBatchUpload}
-            className="block w-full max-w-md mx-auto text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 mb-4"
-          />
-          {batchFiles && (
-            <Button
-              isDisabled={loading}
-              isLoading={loading}
-              onPress={predictBatchImages}
-              color="primary"
-              className="block mx-auto"
-            >
-              Predict Batch
-            </Button>
-          )}
 
-          {batchResults.length > 0 && (
-            <Table
-              aria-label="Batch Predictions"
-              className="mt-6"
-            >
-              <thead>
-                <tr>
-                  <th>Image</th>
-                  <th>Top Pathology</th>
-                  <th>Probability</th>
-                </tr>
-              </thead>
-              <tbody>
-                {batchResults.map((result: any, idx: number) => (
-                  <tr key={idx}>
-                    <td>{result.Image}</td>
-                    <td>{result['Top Pathology']}</td>
-                    <td>{result.Probability}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+              <Table aria-label="Prediction Results" className="mt-6">
+                <TableHeader>
+                  <TableColumn>Pathology</TableColumn>
+                  <TableColumn>Probability</TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {predictionResults.map((result: any, idx: number) => (
+                    <TableRow
+                      key={idx}
+                      className={
+                        topPrediction && result.Pathology === topPrediction.Pathology
+                          ? 'bg-yellow-100 font-bold'
+                          : ''
+                      }
+                    >
+                      <TableCell>{result.Pathology}</TableCell>
+                      <TableCell>{result.Probability}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
 
           {error && <p className="text-red-600 mt-4 text-center">{error}</p>}
