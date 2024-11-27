@@ -1,7 +1,7 @@
 import React from "react";
-import NextLink from "next/link";
+import ServiceCard from "../../components/services/ServiceCard";
 
-const modalities = [
+const services = [
   {
     title: "Fundus Imaging",
     imagePath: "/modalities_thumbnails/diabetic_retinopathy.jpg",
@@ -24,37 +24,25 @@ const modalities = [
   },
 ];
 
-export default function ImagingModalities() {
+export default function Services() {
   return (
     <div className="max-w-7xl mx-auto p-6">
       <h1 className="text-4xl font-extrabold text-center mb-8">
-        AI-Powered Image Analysis Tools
+        Our AI-Powered Services
       </h1>
       <p className="text-lg text-gray-600 text-center mb-12">
-        Discover advanced medical imaging tools and analysis. Click on a modality to learn more.
+        Explore our advanced tools and services. Click on a service to learn more.
       </p>
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-        {modalities.map((modality, index) => (
-          <div
+        {services.map((service, index) => (
+          <ServiceCard
             key={index}
-            className="group relative cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow"
-          >
-            <NextLink href={modality.path}>
-              <div className="relative w-full h-60">
-                <img
-                  src={modality.imagePath}
-                  alt={modality.title}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <div className="absolute inset-0 bg-black bg-opacity-50 group-hover:bg-opacity-30 transition-all"></div>
-              <div className="absolute bottom-4 left-4">
-                <h2 className="text-lg font-bold text-white">{modality.title}</h2>
-                <p className="text-sm text-gray-300">{modality.description}</p>
-              </div>
-            </NextLink>
-          </div>
+            title={service.title}
+            imagePath={service.imagePath}
+            description={service.description}
+            path={service.path}
+          />
         ))}
       </div>
     </div>
