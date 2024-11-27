@@ -8,6 +8,18 @@ type ServiceCardProps = {
   path: string;
 };
 
+/**
+ * A card component that displays a service with an image, title, and description.
+ * The card is clickable and navigates to the specified path when clicked.
+ *
+ * @component
+ * @param {Object} props - The properties object.
+ * @param {string} props.title - The title of the service.
+ * @param {string} props.imagePath - The path to the image representing the service.
+ * @param {string} props.description - A brief description of the service.
+ * @param {string} props.path - The path to navigate to when the card is clicked.
+ * @returns {JSX.Element} The rendered ServiceCard component.
+ */
 const ServiceCard: React.FC<ServiceCardProps> = ({
   title,
   imagePath,
