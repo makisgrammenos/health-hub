@@ -1,2 +1,8 @@
 backend/models/diabetic_retinopathy/checkpoint.chk
 backend/models/brain_tumor_segmentation/model.pt
+
+# ignore __pycache__ directories
+backend/__pycache__/
+backend/models/brain_tumor_segmentation/__pycache__/
+backend/models/diabetic_retinopathy/__pycache__/
+backend/routers/__pycache__/
