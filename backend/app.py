@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import diabetic_retinopathy,brain_tumor_segmentation,chestXray
+from routers import diabetic_retinopathy,brain_tumor_segmentation,chestXray,image_processing
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -27,6 +27,8 @@ app.add_middleware(
 app.include_router(diabetic_retinopathy.router, prefix="/imaging/diabetic-retinopathy", tags=["Diabetic Retinopathy"])
 app.include_router(brain_tumor_segmentation.router, prefix="/imaging/brain-tumor", tags=["Brain Tumor Segmentation"])
 app.include_router(chestXray.router, prefix="/imaging/chest-x-ray", tags=["Chest X-Ray"])
+app.include_router(image_processing.router, prefix="/imaging/image-processing", tags=["Image Processing"])
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to the Medical Imaging Prediction API"}

@@ -12,7 +12,7 @@ import ServiceCard from "../../components/services/ServiceCard";
  */
 const services = [
   {
-    title: "Fundus Imaging",
+    title: "Dibatic Retinopathy Detection",
     imagePath: "/modalities_thumbnails/diabetic_retinopathy.jpg",
     description: "Leverage AI to detect diabetic retinopathy with precision.",
     path: "/imaging-modalities/diabetic-retinopathy",

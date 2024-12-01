@@ -68,6 +68,7 @@
 		"next-themes": "^0.2.1",
 		"react": "18.3.1",
 		"react-dom": "18.3.1",
+		"react-horizontal-scrolling-menu": "^8.2.0",
 		"recharts": "^2.13.3"
 	},
 	"devDependencies": {
