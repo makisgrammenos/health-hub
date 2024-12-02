@@ -1,10 +1,11 @@
 import React from "react";
+
 import ServiceCard from "../../components/services/ServiceCard";
 
 /**
  * An array of service objects, each representing a medical imaging modality.
  * Each service object contains the following properties:
- * 
+ *
  * @property {string} title - The title of the imaging modality.
  * @property {string} imagePath - The path to the thumbnail image representing the modality.
  * @property {string} description - A brief description of the imaging modality and its AI capabilities.
@@ -31,20 +32,19 @@ const services = [
       "AI-assisted detection of chest pathologies using X-ray imaging.",
     path: "/imaging-modalities/chest-pathology-classification",
   },
-  
 ];
 
 /**
  * Renders the Services component which displays a list of AI-powered services.
- * 
+ *
  * @returns {JSX.Element} The rendered Services component.
- * 
+ *
  * The component includes:
  * - A main container with a maximum width and padding.
  * - A heading with the title "Our AI-Powered Services".
  * - A paragraph with a brief description.
  * - A grid layout that displays a list of service cards.
- * 
+ *
  * Each service card is rendered using the `ServiceCard` component and includes:
  * - `title`: The title of the service.
  * - `imagePath`: The path to the service's image.
@@ -58,17 +58,18 @@ export default function Services() {
         Our AI-Powered Services
       </h1>
       <p className="text-lg text-gray-600 text-center mb-12">
-        Explore our advanced tools and services. Click on a service to learn more.
+        Explore our advanced tools and services. Click on a service to learn
+        more.
       </p>
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
         {services.map((service, index) => (
           <ServiceCard
             key={index}
-            title={service.title}
-            imagePath={service.imagePath}
             description={service.description}
+            imagePath={service.imagePath}
             path={service.path}
+            title={service.title}
           />
         ))}
       </div>

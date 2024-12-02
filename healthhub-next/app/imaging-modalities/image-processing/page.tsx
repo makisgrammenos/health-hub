@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Slider } from '@nextui-org/slider';
+import { Card, CardHeader, CardBody } from '@nextui-org/card';
+import { Input } from '@nextui-org/input';
 import { Progress } from '@nextui-org/progress';
-import { Switch } from '@nextui-org/switch';
+import { Slider } from '@nextui-org/slider';
+import { Checkbox, CheckboxGroup } from '@nextui-org/checkbox'; // Checkbox for toggling methods
+import { Select, SelectItem } from '@nextui-org/select'; // Dropdown component
 import debounce from 'lodash.debounce';
 
 export default function MedicalImageEnhancement() {
@@ -26,181 +29,210 @@ export default function MedicalImageEnhancement() {
     unsharpStrength: 1.5,
     normalizeMin: 0,
     normalizeMax: 255,
+    windowWidth: 255,
+    windowCenter: 127,
+    thresholdMin: 50,
+    thresholdMax: 200,
+    pseudocolorMap: 'COLORMAP_JET',
+    kernelSize: 3,
+    morphOperation: 'dilation',
   });
 
-  // Methods to apply
-  const [methods, setMethods] = useState({
-    denoising: true,
-    normalization: true,
-    histogramEqualization: true,
-    clahe: true,
-    unsharpMasking: true,
-  });
+  // Active preprocessing methods
+  const [activeMethods, setActiveMethods] = useState<string[]>([]);
 
   // WebSocket connection setup
   useEffect(() => {
-    websocketRef.current = new WebSocket('ws://localhost:8000/imaging/image-processing/ws');
+    websocketRef.current = new WebSocket('ws://localhost:8000/ws');
 
     websocketRef.current.onopen = () => console.log('WebSocket connected.');
+
     websocketRef.current.onmessage = (event) => {
-      if (event.data instanceof Blob) {
-        // Handle Blob data from the WebSocket
-        const reader = new FileReader();
-        reader.onload = () => {
-          const base64Image = reader.result as string;
-          console.log('Received Base64 Image:', base64Image); // Debugging: Log received image
-          setProcessedImage(base64Image);
-          setLoading(false);
-        };
-        reader.readAsDataURL(event.data);
-      } else if (typeof event.data === 'string') {
-        // Handle JSON messages
-        try {
-          const data = JSON.parse(event.data);
-          if (data.message === 'Processing complete') {
-            setLoading(false);
-          } else if (data.error) {
-            setError(data.error);
-            setLoading(false);
-          }
-        } catch (e) {
-          console.error('Failed to parse message:', e);
-        }
+      if (typeof event.data === 'string') {
+        setProcessedImage(`data:image/png;base64,${event.data}`);
+        setLoading(false);
       }
     };
 
-    websocketRef.current.onclose = () => console.log('WebSocket closed.');
     websocketRef.current.onerror = (err) => {
-      setError('An error occurred during WebSocket communication.');
-      console.error('WebSocket error:', err);
+      setError('WebSocket error: ' + err);
+      console.error(err);
     };
+
+    websocketRef.current.onclose = () => console.log('WebSocket closed.');
 
     return () => websocketRef.current?.close();
   }, []);
 
+  // Handle image upload
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
-      setError(null);
       setImage(selectedFile);
       setUploadedImagePreview(URL.createObjectURL(selectedFile));
       setProcessedImage(null);
+      setError(null);
     }
   };
 
+  // Start enhancement process
   const startEnhancement = useCallback(() => {
     if (!image) {
       setError('Please upload an image.');
       return;
     }
-
     if (!websocketRef.current || websocketRef.current.readyState !== WebSocket.OPEN) {
       setError('WebSocket connection is not open.');
       return;
     }
-
     setLoading(true);
-    setError(null);
-    setProcessedImage(null);
-
     const reader = new FileReader();
     reader.onload = () => {
-      const base64Image = reader.result?.toString().split(',')[1];
       websocketRef.current?.send(
         JSON.stringify({
-          image: base64Image,
+          image: reader.result?.toString().split(',')[1],
           params,
-          methods,
+          methods: activeMethods.reduce((acc, method) => {
+            acc[method] = true;
+            return acc;
+          }, {}),
         })
       );
     };
     reader.readAsDataURL(image);
-  }, [image, params, methods]);
+  }, [image, params, activeMethods]);
 
+  // Debounce the enhancement function
   const debouncedEnhancement = useMemo(() => debounce(startEnhancement, 500), [startEnhancement]);
 
-  const handleParamChange = (name: string, value: number | string) => {
+  // Handle parameter changes
+  const handleParamChange = (name: string, value: any) => {
     setParams((prev) => ({
       ...prev,
       [name]: value,
     }));
+    debouncedEnhancement(); // Trigger the enhancement process when parameters change
   };
 
-  const handleMethodChange = (name: string, value: boolean) => {
-    setMethods((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  // Handle active methods change
+  const handleMethodChange = (methods: string[]) => {
+    setActiveMethods(methods);
+    debouncedEnhancement(); // Trigger the enhancement process when methods change
   };
-
-  useEffect(() => {
-    if (image) {
-      debouncedEnhancement();
-    }
-    return () => {
-      debouncedEnhancement.cancel();
-    };
-  }, [params, methods, debouncedEnhancement, image]);
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-1/4 bg-gray-800 text-white p-6 overflow-y-auto shadow-md">
-        <h2 className="text-lg font-bold mb-4">Preprocessing Methods</h2>
-        {Object.entries(methods).map(([method, isActive]) => (
-          <div key={method} className="flex items-center justify-between mb-4">
-            <span className="capitalize">{method.replace(/([A-Z])/g, ' $1')}</span>
-            <Switch isSelected={isActive} onChange={(e) => handleMethodChange(method, e.target.checked)} />
-          </div>
-        ))}
-      </aside>
+    <div className="flex flex-col h-screen">
+      {/* Top Bar */}
+      <div className="bg-gray-100 p-4 border-b">
+        <h1 className="text-2xl font-bold text-center">🩺 Medical Image Enhancement</h1>
+      </div>
 
-      {/* Main Panel */}
-      <main className="flex-1 flex flex-col">
-        {/* Top Section */}
-        <div className="p-6 bg-white shadow-md border-b">
-          <h1 className="text-2xl font-bold mb-4">🩺 Medical Image Enhancement</h1>
-          <div className="flex items-center gap-4 mb-6">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="block w-full max-w-md text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
-          </div>
-          {uploadedImagePreview && (
-            <div className="mb-6">
-              <h2 className="font-semibold text-lg">Uploaded Image:</h2>
-              <img
-                src={uploadedImagePreview}
-                alt="Uploaded Preview"
-                className="w-full max-w-lg mx-auto rounded-md shadow-md"
-              />
-            </div>
-          )}
-        </div>
+      {/* Main Content */}
+      <div className="flex flex-grow">
+        {/* Sidebar for Controls */}
+        <aside className="w-1/4 bg-gray-50 p-4 border-r overflow-y-auto">
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            label="Upload Image"
+            fullWidth
+            className="mb-6"
+          />
 
-        {/* Bottom Section */}
-        <div className="flex-1 p-6 overflow-y-auto bg-gray-50">
+          <h3 className="text-lg font-semibold mb-4">Preprocessing Methods</h3>
+          <CheckboxGroup
+            value={activeMethods}
+            onChange={(values) => handleMethodChange(values)}
+          >
+            <Checkbox value="denoising">Denoising</Checkbox>
+            <Checkbox value="normalization">Normalization</Checkbox>
+            <Checkbox value="histogramEqualization">Histogram Equalization</Checkbox>
+            <Checkbox value="clahe">CLAHE</Checkbox>
+            <Checkbox value="unsharpMasking">Unsharp Masking</Checkbox>
+            <Checkbox value="windowing">Windowing</Checkbox>
+            <Checkbox value="thresholdSegmentation">Threshold Segmentation</Checkbox>
+            <Checkbox value="pseudocolor">Pseudocolor</Checkbox>
+            <Checkbox value="morphologicalOperations">Morphological Operations</Checkbox>
+          </CheckboxGroup>
+
+          {/* Adjustable Parameters */}
+          <div className="mt-6">
+            {activeMethods.includes('denoising') && (
+              <>
+                <Select
+                  label="Denoise Method"
+                  value={params.denoiseMethod}
+                  onChange={(value) => handleParamChange('denoiseMethod', value)}
+                >
+                  <SelectItem key="bilateral" value="bilateral">Bilateral</SelectItem>
+                  <SelectItem key="gaussian" value="gaussian">Gaussian</SelectItem>
+                  <SelectItem key="median" value="median">Median</SelectItem>
+                </Select>
+                <Slider
+                  label="Bilateral Diameter"
+                  value={params.bilateralD}
+                  min={1}
+                  max={50}
+                  onChange={(value) => handleParamChange('bilateralD', value)}
+                />
+                <Slider
+                  label="Sigma Color"
+                  value={params.bilateralSigmaColor}
+                  min={10}
+                  max={150}
+                  onChange={(value) => handleParamChange('bilateralSigmaColor', value)}
+                />
+              </>
+            )}
+            {activeMethods.includes('clahe') && (
+              <>
+                <Slider
+                  label="Clip Limit"
+                  value={params.clipLimit}
+                  min={0.1}
+                  max={5.0}
+                  step={0.1}
+                  onChange={(value) => handleParamChange('clipLimit', value)}
+                />
+                <Slider
+                  label="Tile Grid Size"
+                  value={params.tileGridSize}
+                  min={1}
+                  max={16}
+                  onChange={(value) => handleParamChange('tileGridSize', value)}
+                />
+              </>
+            )}
+            {/* Add additional adjustable parameters for other methods here */}
+          </div>
+        </aside>
+
+        {/* Main Image Area */}
+        <main className="flex-1 p-4 flex flex-col items-center justify-center bg-gray-100">
           {loading && (
-            <div className="flex justify-center items-center h-full">
+            <div className="flex flex-col items-center">
               <Progress indeterminate />
               <p className="text-gray-600 mt-2">Processing image...</p>
             </div>
           )}
-          {processedImage && (
-            <div>
-              <h2 className="font-semibold text-lg mb-4">Enhanced Image:</h2>
-              <img
-                src={processedImage}
-                alt="Processed Image"
-                className="w-full max-w-lg mx-auto rounded-md shadow-md"
-              />
-            </div>
+          {!loading && processedImage && (
+            <img
+              src={processedImage}
+              alt="Processed Image"
+              className="w-full max-w-2xl rounded-lg shadow-md"
+            />
           )}
-          {error && <p className="text-red-600 mt-4">{error}</p>}
-        </div>
-      </main>
+          {!loading && !processedImage && uploadedImagePreview && (
+            <img
+              src={uploadedImagePreview}
+              alt="Uploaded Image"
+              className="w-full max-w-2xl rounded-lg shadow-md"
+            />
+          )}
+          {error && <p className="text-red-500 mt-4">{error}</p>}
+        </main>
+      </div>
     </div>
   );
 }
