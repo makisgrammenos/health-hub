@@ -1,5 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import cv2
 import numpy as np
 from PIL import Image
@@ -10,100 +9,96 @@ import json
 router = APIRouter()
 
 # Utility functions
-def image_to_base64(image: np.ndarray):
-    # Encode image to PNG format
-    is_success, buffer = cv2.imencode('.png', image)
-    if not is_success:
-        raise ValueError("Could not encode image to bytes")
-    base64_str = base64.b64encode(buffer).decode('utf-8')
-    return base64_str
+def image_to_bytes(image: np.ndarray):
+    _, buffer = cv2.imencode('.png', image)
+    return buffer.tobytes()
 
-def process_image_in_steps(image: np.ndarray, params: dict):
-    steps = []
+def process_image(image: np.ndarray, params: dict, methods: dict):
+    # Validate and adjust parameters
+    def ensure_odd(value):
+        return int(value) if int(value) % 2 == 1 else int(value) + 1
 
-    # Ensure image is uint8
-    if image.dtype != np.uint8:
-        image = image.astype(np.uint8)
+    bilateral_d = ensure_odd(params.get("bilateralD", 9))
+    bilateral_sigma_color = params.get("bilateralSigmaColor", 75)
+    bilateral_sigma_space = params.get("bilateralSigmaSpace", 75)
+    gaussian_kernel_size = ensure_odd(params.get("gaussianKernelSize", 5))
+    clip_limit = params.get("clipLimit", 2.0)
+    tile_grid_size = params.get("tileGridSize", 8)
+    unsharp_strength = params.get("unsharpStrength", 1.5)
+    normalize_min = params.get("normalizeMin", 0)
+    normalize_max = params.get("normalizeMax", 255)
+
+    # Processing Steps
 
     # Step 1: Denoising
-    denoise_method = params.get("denoise_method", "bilateral")
-    if denoise_method == "bilateral":
-        image = cv2.bilateralFilter(
-            image,
-            d=int(params.get("bilateral_d", 9)),
-            sigmaColor=float(params.get("bilateral_sigma_color", 75)),
-            sigmaSpace=float(params.get("bilateral_sigma_space", 75))
-        )
-    elif denoise_method == "gaussian":
-        kernel_size = int(params.get("gaussian_kernel_size", 5))
-        kernel_size = kernel_size if kernel_size % 2 == 1 else kernel_size + 1
-        image = cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
-    elif denoise_method == "median":
-        kernel_size = int(params.get("gaussian_kernel_size", 5))
-        kernel_size = kernel_size if kernel_size % 2 == 1 else kernel_size + 1
-        image = cv2.medianBlur(image, kernel_size)
-    steps.append(image.copy())
+    if methods.get('denoising', True):
+        denoise_method = params.get("denoiseMethod", "bilateral")
+        if denoise_method == "bilateral":
+            image = cv2.bilateralFilter(
+                image,
+                d=bilateral_d,
+                sigmaColor=bilateral_sigma_color,
+                sigmaSpace=bilateral_sigma_space
+            )
+        elif denoise_method == "gaussian":
+            image = cv2.GaussianBlur(image, (gaussian_kernel_size, gaussian_kernel_size), 0)
+        elif denoise_method == "median":
+            image = cv2.medianBlur(image, gaussian_kernel_size)
 
     # Step 2: Normalize Intensity
-    normalize_min = int(params.get("normalize_min", 0))
-    normalize_max = int(params.get("normalize_max", 255))
-    image = cv2.normalize(image, None, alpha=normalize_min, beta=normalize_max, norm_type=cv2.NORM_MINMAX)
-    steps.append(image.copy())
+    if methods.get('normalization', True):
+        image = cv2.normalize(image, None, alpha=normalize_min, beta=normalize_max, norm_type=cv2.NORM_MINMAX)
 
     # Step 3: Histogram Equalization
-    image = cv2.equalizeHist(image)
-    steps.append(image.copy())
+    if methods.get('histogramEqualization', True):
+        image = cv2.equalizeHist(image)
 
     # Step 4: Contrast Enhancement (CLAHE)
-    clip_limit = float(params.get("clip_limit", 2.0))
-    tile_grid_size = int(params.get("tile_grid_size", 8))
-    clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(tile_grid_size, tile_grid_size))
-    image = clahe.apply(image)
-    steps.append(image.copy())
+    if methods.get('clahe', True):
+        clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(tile_grid_size, tile_grid_size))
+        image = clahe.apply(image)
 
     # Step 5: Edge Enhancement (Unsharp Masking)
-    gaussian_kernel_size = int(params.get("gaussian_kernel_size", 5))
-    gaussian_kernel_size = gaussian_kernel_size if gaussian_kernel_size % 2 == 1 else gaussian_kernel_size + 1
-    unsharp_strength = float(params.get("unsharp_strength", 1.5))
-    blurred = cv2.GaussianBlur(image, (gaussian_kernel_size, gaussian_kernel_size), 0)
-    image = cv2.addWeighted(image, 1 + unsharp_strength, blurred, -unsharp_strength, 0)
-    steps.append(image.copy())
+    if methods.get('unsharpMasking', True):
+        blurred = cv2.GaussianBlur(image, (gaussian_kernel_size, gaussian_kernel_size), 0)
+        image = cv2.addWeighted(image, 1 + unsharp_strength, blurred, -unsharp_strength, 0)
 
-    # Step 6: High-Pass Filtering
-    highpass_kernel = params.get("highpass_kernel", [[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
-    kernel = np.array(highpass_kernel, dtype=np.float32)
-    image = cv2.filter2D(image, -1, kernel)
-    steps.append(image.copy())
+    # Step 6: High-Pass Filtering (Optional)
+    # if methods.get('highPassFiltering', False):
+    #     highpass_kernel = np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]], dtype=np.float32)
+    #     image = cv2.filter2D(image, -1, highpass_kernel)
 
-    return steps
+    return image
 
-# HTTP POST route
-@router.post("/process-image")
-async def process_image(
-    file: UploadFile = File(...),
-    params_json: str = Form(...)
-):
+# WebSocket route
+@router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+
     try:
-        # Read the image file
-        contents = await file.read()
-        pil_image = Image.open(BytesIO(contents)).convert("L")
-        image = np.array(pil_image)
+        while True:
+            # Receive image and parameters from the client
+            message = await websocket.receive_text()
+            message_data = json.loads(message)
 
-        # Parse parameters
-        params = json.loads(params_json)
+            # Parse the image data and parameters
+            image_data = message_data.get("image")
+            params = message_data.get("params", {})
+            methods = message_data.get("methods", {})
 
-        # For debugging: print received parameters
-        print("Received parameters:", params)
+            # Correctly decode the base64 image data
+            image_bytes = base64.b64decode(image_data)
+            pil_image = Image.open(BytesIO(image_bytes)).convert("L")
+            image = np.array(pil_image)
 
-        # Process the image step-by-step with parameters
-        steps = process_image_in_steps(image, params)
+            # Process the image with parameters and methods
+            processed_image = process_image(image, params, methods)
+            image_bytes = image_to_bytes(processed_image)
+            await websocket.send_bytes(image_bytes)
 
-        # Convert processed images to base64 strings
-        processed_images = [image_to_base64(step) for step in steps]
-
-        return JSONResponse(content={"images": processed_images})
-
+            # Notify client that processing is complete
+            await websocket.send_text(json.dumps({"message": "Processing complete"}))
+    except WebSocketDisconnect:
+        print("WebSocket disconnected")
     except Exception as e:
-        error_message = f"Error processing image: {str(e)}"
-        print(error_message)
-        raise HTTPException(status_code=500, detail=error_message)
+        await websocket.send_text(json.dumps({"error": str(e)}))
