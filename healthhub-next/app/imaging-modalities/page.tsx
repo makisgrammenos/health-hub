@@ -1,7 +1,7 @@
 import React from "react";
 
 import ServiceCard from "../../components/services/ServiceCard";
-
+import {Divider} from "@nextui-org/divider";
 /**
  * An array of service objects, each representing a medical imaging modality.
  * Each service object contains the following properties:
@@ -33,7 +33,13 @@ const services = [
     path: "/imaging-modalities/chest-pathology-classification",
   },
 ];
-
+const services2 = [{
+  title: "Image Processing",
+  imagePath: "/modalities_thumbnails/image-proccesing.jpeg",
+  description:
+    "Standard Image Proceesing Tool",
+  path: "/imaging-modalities/image-processing",
+},]
 /**
  * Renders the Services component which displays a list of AI-powered services.
  *
@@ -73,6 +79,25 @@ export default function Services() {
           />
         ))}
       </div>
+      <Divider className='my-4'/>
+      <div className="text-center mt-8">
+        <h2 className="text-2xl font-bold mb-4">Image Proccesing</h2>
+        <p className="text-lg text-gray-600">
+
+        </p>
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+        {services2.map((service, index) => (
+          <ServiceCard
+            key={index}
+            description={service.description}
+            imagePath={service.imagePath}
+            path={service.path}
+            title={service.title}
+          />
+        ))}
+      </div>
+        </div>
+
     </div>
   );
 }
