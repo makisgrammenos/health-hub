@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import diabetic_retinopathy,brain_tumor_segmentation,chestXray,image_processing
+from routers import diabetic_retinopathy,brain_tumor_segmentation,chestXray,image_processing, covid_prediction
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -28,6 +28,8 @@ app.include_router(diabetic_retinopathy.router, prefix="/imaging/diabetic-retino
 app.include_router(brain_tumor_segmentation.router, prefix="/imaging/brain-tumor", tags=["Brain Tumor Segmentation"])
 app.include_router(chestXray.router, prefix="/imaging/chest-x-ray", tags=["Chest X-Ray"])
 app.include_router(image_processing.router, prefix="/imaging/image-processing", tags=["Image Processing"])
+app.include_router(covid_prediction.router, prefix="/imaging/covid", tags=["COVID-19 Prediction"])
+
 
 @app.get("/")
 async def root():
