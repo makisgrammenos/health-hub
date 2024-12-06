@@ -32,6 +32,13 @@ const services = [
       "AI-assisted detection of chest pathologies using X-ray imaging.",
     path: "/imaging-modalities/chest-pathology-classification",
   },
+  {
+    title: "COVID-19 Detection",
+    imagePath: "/modalities_thumbnails/covid19.jpeg",
+    description:
+      "AI-assisted detection of COVID-19 disease.",
+    path: "/imaging-modalities/covid-19-prediction",
+  },
 ];
 const services2 = [{
   title: "Image Processing",
