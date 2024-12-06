@@ -22,8 +22,8 @@ async def predict_covid(file: UploadFile = File(...)):
         image = Image.open(BytesIO(contents)).convert("RGB")
 
         # Predict
-        prediction = model.predict(image)
+        prediction,probabilities = model.predict(image)
 
-        return {"message": "Prediction successful", "prediction": prediction}
+        return {"message": "Prediction successful", "prediction": prediction, "probabilities": probabilities}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")

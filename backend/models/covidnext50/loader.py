@@ -26,4 +26,6 @@ class COVIDNext50Model:
         with torch.no_grad():
             logits = self.model(img_tensor)
             cat_id = int(torch.argmax(logits))
-        return self.rev_mapping[cat_id]
+            probabilities = self.model.probability(logits)
+            probabilities = probabilities.squeeze().tolist()
+        return  self.rev_mapping[cat_id],probabilities
