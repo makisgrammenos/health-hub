@@ -39,14 +39,28 @@ const services = [
       "AI-assisted detection of COVID-19 disease.",
     path: "/imaging-modalities/covid-19-prediction",
   },
+  {
+    title: "Image Processing",
+    imagePath: "/modalities_thumbnails/image-proccesing.jpeg",
+    description:
+      "Standard Image Proceesing Tool",
+    path: "/imaging-modalities/image-processing",
+  },
+  {
+    title: "Invasive Ductal Carcinoma Detection",
+    imagePath: "/modalities_thumbnails/breast-cancer.jpg",
+    description:
+      "AI-powered detection of invasive ductal carcinoma in breast cancer.",
+    path: "/imaging-modalities/image-processing/invasive-ductal-carcinoma",
+  }
 ];
-const services2 = [{
-  title: "Image Processing",
-  imagePath: "/modalities_thumbnails/image-proccesing.jpeg",
-  description:
-    "Standard Image Proceesing Tool",
-  path: "/imaging-modalities/image-processing",
-},]
+// const services2 = [{
+//   title: "Image Processing",
+//   imagePath: "/modalities_thumbnails/image-proccesing.jpeg",
+//   description:
+//     "Standard Image Proceesing Tool",
+//   path: "/imaging-modalities/image-processing",
+// },]
 /**
  * Renders the Services component which displays a list of AI-powered services.
  *
@@ -93,7 +107,7 @@ export default function Services() {
 
         </p>
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-        {services2.map((service, index) => (
+        {/* {services2.map((service, index) => (
           <ServiceCard
             key={index}
             description={service.description}
@@ -101,7 +115,7 @@ export default function Services() {
             path={service.path}
             title={service.title}
           />
-        ))}
+        ))} */}
       </div>
         </div>
 
