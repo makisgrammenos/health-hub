@@ -51,7 +51,14 @@ const services = [
     imagePath: "/modalities_thumbnails/breast-cancer.jpg",
     description:
       "AI-powered detection of invasive ductal carcinoma in breast cancer.",
-    path: "/imaging-modalities/image-processing/invasive-ductal-carcinoma",
+    path: "/imaging-modalities/invasive-ductal-carcinoma",
+  },
+  {
+    title: "Skin Cancer Detection",
+    imagePath: "/modalities_thumbnails/breast-cancer.jpg",
+    description:
+      "Detect Melignant and Benign cancer in dermascopy images.",
+    path: "/imaging-modalities/skin-cancer",
   }
 ];
 // const services2 = [{
