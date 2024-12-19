@@ -55,9 +55,16 @@ const services = [
   },
   {
     title: "Skin Cancer Detection",
-    imagePath: "/modalities_thumbnails/breast-cancer.jpg",
+    imagePath: "/modalities_thumbnails/skin-cancer.jpg",
     description:
       "Detect Melignant and Benign cancer in dermascopy images.",
+    path: "/imaging-modalities/skin-cancer",
+  },
+  {
+    title: "Region of interest",
+    imagePath: "/modalities_thumbnails/skin-cancer.jpg",
+    description:
+      "Crop out the region of interest from the image.",
     path: "/imaging-modalities/skin-cancer",
   }
 ];
