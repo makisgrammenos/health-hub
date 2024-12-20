@@ -1,199 +1,249 @@
-'use client';
-import { useState } from "react";
-import axios from "axios";
-import { Button, Input, Textarea, Card, Loading, Checkbox, Dropdown } from "@nextui-org/react";
+'use client'; // Ensure this is the first line
 
-export default function DatasetProcessor() {
-  const [file, setFile] = useState(null);
+import { useState, useEffect } from "react";
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  getKeyValue,
+  Tooltip,
+} from "@nextui-org/react";
+
+const Home = () => {
+  const [rawData, setRawData] = useState([]);
+  const [processedData, setProcessedData] = useState([]);
   const [columns, setColumns] = useState([]);
-  const [isFirstLineHeader, setIsFirstLineHeader] = useState(true);
-  const [dropMissing, setDropMissing] = useState(false);
-  const [fillColumn, setFillColumn] = useState(null);
-  const [fillValue, setFillValue] = useState("");
-  const [categoricalColumn, setCategoricalColumn] = useState(null);
-  const [threshold, setThreshold] = useState("");
-  const [binColumn, setBinColumn] = useState(null);
-  const [bins, setBins] = useState(""); // JSON string for bins
-  const [labels, setLabels] = useState(""); // JSON string for labels
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleFileChange = async (event) => {
-    const selectedFile = event.target.files[0];
-    setFile(selectedFile);
-
-    if (selectedFile) {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-
+  // Fetch dataset from the API
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        const response = await axios.post("http://localhost:8000/preview-columns/", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        setColumns(response.data.columns);
+        // Fetch raw dataset
+        const rawResponse = await fetch("http://127.0.0.1:8000/clinical/heart/dataset/raw");
+        if (!rawResponse.ok) {
+          throw new Error("Failed to fetch raw dataset");
+        }
+        const rawJson = await rawResponse.json();
+        let fetchedRawData = rawJson.data;
+
+        // Ensure each item has a unique key
+        fetchedRawData = fetchedRawData.map((item, index) => ({
+          ...item,
+          key: item.id || index, // Replace 'id' with your unique identifier if available
+        }));
+        setRawData(fetchedRawData);
+
+        // Transform columns to match NextUI's expected structure
+        const transformedColumns = rawJson.columns.map((col) => ({
+          key: col,
+          label: col.toUpperCase(), // Customize label as needed
+        }));
+        setColumns(transformedColumns);
+
+        // Fetch processed dataset
+        const processedResponse = await fetch("http://127.0.0.1:8000/clinical/heart/dataset/processed");
+        if (!processedResponse.ok) {
+          throw new Error("Failed to fetch processed dataset");
+        }
+        const processedJson = await processedResponse.json();
+        let fetchedProcessedData = processedJson.data;
+
+        // Ensure each item has a unique key
+        fetchedProcessedData = fetchedProcessedData.map((item, index) => ({
+          ...item,
+          key: item.id || index, // Replace 'id' with your unique identifier if available
+        }));
+        setProcessedData(fetchedProcessedData);
       } catch (error) {
-        console.error("Error fetching columns:", error);
+        console.error("Error fetching data:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div>Loading datasets...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  // Define styles for the scrollable container
+  const scrollableContainerStyle = {
+    maxHeight: "400px", // Adjust the height as needed
+    overflowY: "auto",
+    overflowX: "auto",
+    // Optional: Add border and padding for better aesthetics
+    border: "1px solid #eaeaea",
+    borderRadius: "8px",
+    padding: "1rem",
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true);
+  // Create a map for raw data for quick lookup
+  const rawDataMap = new Map();
+  rawData.forEach((item) => {
+    rawDataMap.set(item.key, item);
+  });
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("is_first_line_header", isFirstLineHeader);
-    formData.append("drop_missing", dropMissing);
-    if (fillColumn && fillValue) {
-      formData.append("fill_missing", JSON.stringify({ [fillColumn]: fillValue }));
-    }
-    formData.append("categorical_column", categoricalColumn);
-    formData.append("threshold", threshold);
-    formData.append("bin_column", binColumn);
-    formData.append("bins", bins);
-    formData.append("labels", labels);
-
-    try {
-      const response = await axios.post("http://localhost:8000/upload/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setResult(response.data);
-    } catch (error) {
-      console.error("Error uploading dataset:", error);
-    } finally {
-      setLoading(false);
-    }
+  // Legend for highlights
+  const legendStyle = {
+    display: "flex",
+    alignItems: "center",
+    marginBottom: "1rem",
   };
+
+  const legendItemStyle = {
+    display: "flex",
+    alignItems: "center",
+    marginRight: "1rem",
+  };
+
+  const colorBoxStyle = (color) => ({
+    width: "16px",
+    height: "16px",
+    backgroundColor: color,
+    marginRight: "0.5rem",
+    borderRadius: "4px",
+  });
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h1>Dataset Processor</h1>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "1rem" }}>
-          <Input
-            type="file"
-            onChange={handleFileChange}
-            fullWidth
-            label="Upload Dataset"
-          />
+      <h1>Dataset Demonstration</h1>
+      <p style={{ fontSize: "18px", marginBottom: "1rem" }}>
+        This application demonstrates the preprocessing done on the Heart Disease
+        dataset. Below, you can see the raw dataset and its processed version.
+      </p>
+
+      {/* Legend for Highlights */}
+      <div style={legendStyle}>
+        <div style={legendItemStyle}>
+          <div style={colorBoxStyle("rgba(255, 235, 59, 0.4)")}></div>
+          <span>Changed Value</span>
         </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <Checkbox
-            isSelected={isFirstLineHeader}
-            onChange={(checked) => setIsFirstLineHeader(checked)}
-          >
-            Columns are in the first line
-          </Checkbox>
+        <div style={legendItemStyle}>
+          <div style={colorBoxStyle("rgba(76, 175, 80, 0.4)")}></div>
+          <span>New Value</span>
         </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <Checkbox
-            isSelected={dropMissing}
-            onChange={(checked) => setDropMissing(checked)}
-          >
-            Drop Missing Values
-          </Checkbox>
-        </div>
-        {columns.length > 0 && (
-          <div style={{ marginBottom: "1rem" }}>
-            <Dropdown>
-              <Dropdown.Trigger>
-                <Button>{fillColumn || "Select column to fill"}</Button>
-              </Dropdown.Trigger>
-              <Dropdown.Menu
-                selectionMode="single"
-                onSelectionChange={(key) => setFillColumn(key)}
+      </div>
+
+      {/* Raw Dataset Table */}
+      <h2>Raw Dataset</h2>
+      <div style={scrollableContainerStyle}>
+        <Table
+          aria-label="Raw Dataset Table"
+          css={{
+            minWidth: "100%", // Ensures table takes full width of container
+          }}
+          selectionMode="none" // Optional: Disable row selection if not needed
+        >
+          <TableHeader columns={columns}>
+            {(column) => (
+              <TableColumn
+                key={column.key}
+                css={{
+                  position: "sticky",
+                  top: 0,
+                  backgroundColor: "$accents0", // Adjust based on your theme
+                  zIndex: 1,
+                }}
               >
-                {columns.map((col, index) => (
-                  <Dropdown.Item key={col}>{col}</Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-            {fillColumn && (
-              <Input
-                label="Fill Value"
-                placeholder="Enter value to fill"
-                value={fillValue}
-                onChange={(e) => setFillValue(e.target.value)}
-                fullWidth
-              />
+                {column.label}
+              </TableColumn>
             )}
-          </div>
-        )}
-        {columns.length > 0 && (
-          <div style={{ marginBottom: "1rem" }}>
-            <Dropdown>
-              <Dropdown.Trigger>
-                <Button>{categoricalColumn || "Select column for categorical"}</Button>
-              </Dropdown.Trigger>
-              <Dropdown.Menu
-                selectionMode="single"
-                onSelectionChange={(key) => setCategoricalColumn(key)}
+          </TableHeader>
+          <TableBody items={rawData}>
+            {(item) => (
+              <TableRow key={item.key}>
+                {(columnKey) => (
+                  <TableCell>
+                    {getKeyValue(item, columnKey)}
+                  </TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Processed Dataset Table */}
+      <h2 style={{ marginTop: "2rem" }}>Processed Dataset</h2>
+      <div style={scrollableContainerStyle}>
+        <Table
+          aria-label="Processed Dataset Table"
+          css={{
+            minWidth: "100%", // Ensures table takes full width of container
+          }}
+          selectionMode="none" // Optional: Disable row selection if not needed
+        >
+          <TableHeader columns={columns}>
+            {(column) => (
+              <TableColumn
+                key={column.key}
+                css={{
+                  position: "sticky",
+                  top: 0,
+                  backgroundColor: "$accents0", // Adjust based on your theme
+                  zIndex: 1,
+                }}
               >
-                {columns.map((col, index) => (
-                  <Dropdown.Item key={col}>{col}</Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
-        )}
-        <div style={{ marginBottom: "1rem" }}>
-          <Input
-            label="Threshold for Categorical Conversion"
-            placeholder="Enter threshold"
-            value={threshold}
-            onChange={(e) => setThreshold(e.target.value)}
-            type="number"
-            fullWidth
-          />
-        </div>
-        {columns.length > 0 && (
-          <div style={{ marginBottom: "1rem" }}>
-            <Dropdown>
-              <Dropdown.Trigger>
-                <Button>{binColumn || "Select column to bin"}</Button>
-              </Dropdown.Trigger>
-              <Dropdown.Menu
-                selectionMode="single"
-                onSelectionChange={(key) => setBinColumn(key)}
-              >
-                {columns.map((col, index) => (
-                  <Dropdown.Item key={col}>{col}</Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
-        )}
-        <div style={{ marginBottom: "1rem" }}>
-          <Textarea
-            label="Bins (JSON)"
-            placeholder="[0, 30, 60, 90]"
-            value={bins}
-            onChange={(e) => setBins(e.target.value)}
-            fullWidth
-          />
-        </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <Textarea
-            label="Labels for Bins (JSON)"
-            placeholder='["Young", "Middle-Aged", "Senior"]'
-            value={labels}
-            onChange={(e) => setLabels(e.target.value)}
-            fullWidth
-          />
-        </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <Button type="submit" disabled={!file || loading} auto>
-            {loading ? <Loading type="points" /> : "Process Dataset"}
-          </Button>
-        </div>
-      </form>
-      {result && (
-        <Card style={{ marginTop: "2rem" }}>
-          <h3>Processed Dataset</h3>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
-        </Card>
-      )}
+                {column.label}
+              </TableColumn>
+            )}
+          </TableHeader>
+          <TableBody items={processedData}>
+            {(item) => (
+              <TableRow key={item.key}>
+                {(columnKey) => {
+                  const rawItem = rawDataMap.get(item.key);
+                  const rawValue = rawItem ? rawItem[columnKey] : null;
+                  const processedValue = getKeyValue(item, columnKey);
+                  const isNew = !rawItem; // If there's no corresponding raw item
+                  const isDifferent = rawValue !== processedValue;
+                  let backgroundColor = "inherit";
+                  let tooltipContent = "";
+
+                  if (isNew) {
+                    backgroundColor = "rgba(76, 175, 80, 0.4)"; // Light green for new values
+                    tooltipContent = "New Value";
+                  } else if (isDifferent) {
+                    backgroundColor = "rgba(255, 235, 59, 0.4)"; // Light yellow for changed values
+                    tooltipContent = "Changed Value";
+                  }
+
+                  return (
+                    <TableCell
+                      css={{
+                        backgroundColor,
+                        transition: "background-color 0.3s ease",
+                      }}
+                    >
+                      {isDifferent || isNew ? (
+                        <Tooltip content={tooltipContent}>
+                          <span>{processedValue}</span>
+                        </Tooltip>
+                      ) : (
+                        processedValue
+                      )}
+                    </TableCell>
+                  );
+                }}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
-}
+};
+
+export default Home;
