@@ -490,7 +490,7 @@ export default function ROISelector() {
           {/* Cropped Image Preview and Download/Delete Buttons */}
           {croppedBase64 && (
             <div className="bg-white p-4 rounded shadow-sm text-sm max-w-[300px] mt-4 md:mt-0">
-              <h2 className="font-bold mb-2">Cropped Image Preview</h2>
+              <h2 className="font-bold mb-2">Selected Region of Interest Preview</h2>
               <img
                 src={`data:image/jpeg;base64,${croppedBase64}`}
                 alt="Cropped Preview"
@@ -503,6 +503,12 @@ export default function ROISelector() {
                 >
                   Download Cropped ROI
                 </button>
+                {/*<button*/}
+                {/*  onClick={handleDownload}*/}
+                {/*  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"*/}
+                {/*>*/}
+                {/*  Show statistics*/}
+                {/*</button>*/}
                 <button
                   onClick={handleDelete}
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"

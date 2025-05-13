@@ -6,3 +6,5 @@
 *.ckpt,*.h5ad filter=lfs diff=lfs merge=lfs -text
 *.h5ad,*.chk,*.pth filter=lfs diff=lfs merge=lfs -text
 *.h5ad,*.chk,*.pth,*.dcm filter=lfs diff=lfs merge=lfs -text
+*.h5ad,*.chk,*.pth,*.dcm,*.h5 filter=lfs diff=lfs merge=lfs -text
+*.h5ad,*.chk,*.pth,*.dcm,*.h5,*.pt filter=lfs diff=lfs merge=lfs -text

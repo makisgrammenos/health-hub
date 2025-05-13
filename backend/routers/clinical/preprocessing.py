@@ -104,7 +104,9 @@ def get_raw_dataset():
     if raw_dataframe is None:
         raise HTTPException(status_code=500, detail="Raw dataset not available.")
     try:
-        response_data = raw_dataframe.to_dict(orient="records")
+        response_data = raw_dataframe.where(raw_dataframe.notnull(), None).to_dict(orient="records")
+
+        # response_data = raw_dataframe.to_dict(orient="records")
         columns = list(raw_dataframe.columns)
         return ProcessedData(data=response_data, columns=columns)
     except Exception as e:

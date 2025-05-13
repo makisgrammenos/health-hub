@@ -8,12 +8,30 @@ RUN apt-get update && apt-get install -y build-essential libpq-dev
 WORKDIR /app
 
 # Copy requirements and install dependencies
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir watchdog  # Required for hot reload
+#COPY requirements.txt /app/
+#RUN pip install --no-cache-dir -r requirements.txt
+#RUN pip install --no-cache-dir watchdog  # Required for hot reload
+#
+## Copy the entire app
+#COPY . /app
+#
+## Expose the FastAPI port
+#EXPOSE 8000
+# Install build dependencies and clean up
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+ && rm -rf /var/lib/apt/lists/*
 
-# Copy the entire app
-COPY . /app
+# Set the working directory
+WORKDIR /app
+
+# Copy only requirements first to leverage Docker's layer caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt watchdog
+
+# Copy the application code
+COPY . .
 
 # Expose the FastAPI port
 EXPOSE 8000

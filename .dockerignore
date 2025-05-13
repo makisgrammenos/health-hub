@@ -1,0 +1,13 @@
+**/*.pyc
+**/*.pyo
+**/*.mo
+.gitignore
+.git/
+**/__pycache__/
+Dockerfile
+db.sqlite3
+**/*.md
+.gitattributes
+backend/.idea
+healthhub-next/.idea
+healthhub-next/.vscode

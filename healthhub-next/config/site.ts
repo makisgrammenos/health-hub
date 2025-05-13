@@ -14,6 +14,10 @@ export const siteConfig = {
     },
     {"label":"Clinical Tools","href":"/clinical-tools"},
     {
+      label: "Molecular Tools",
+      href: "/transcriptomics",
+    },
+    {
       label: "About",
       href: "/about",
     },

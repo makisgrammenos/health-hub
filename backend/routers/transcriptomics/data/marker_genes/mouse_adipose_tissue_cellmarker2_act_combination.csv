@@ -1,0 +1,67 @@
+cell_name,Symbol
+Macrophage,Adgre1
+Macrophage,Mrc1
+Macrophage,Trem2
+Macrophage,Fcgr1
+Macrophage,Arg1
+Macrophage,Cd14
+Macrophage,Itgam
+Macrophage,Lyz1
+Macrophage,Lyz2
+Macrophage,Apoe
+Endothelial cell,Cdh5
+Endothelial cell,Cd34
+Endothelial cell,Flt4
+Endothelial cell,Prox1
+Endothelial cell,Vcam1
+Endothelial cell,Vwf
+Endothelial cell,Sema3g
+Endothelial cell,Cavin2
+Neutrophil,Csf3r
+Neutrophil,Cxcr2
+Neutrophil,Dusp1
+Neutrophil,Ifitm1
+Neutrophil,Il1b
+Neutrophil,Retnlg
+Neutrophil,S100a8
+Neutrophil,S100a9
+Neutrophil,Slpi
+Neutrophil,Wfdc21
+Preadipocyte,Cd34
+Preadipocyte,Dlk1
+Preadipocyte,Ly6a
+Preadipocyte,Pdgfra
+Preadipocyte,Cd55
+Preadipocyte,Col4a1
+Preadipocyte,Dpp4
+Preadipocyte,Col4a2
+Preadipocyte,Gsn
+Preadipocyte,Icam1
+Preadipocyte,Mki67
+Preadipocyte,Sbsn
+Preadipocyte,Pdgfrb
+Preadipocyte,Sema3c
+Preadipocyte,Anxa3
+Dendritic cell,Cd74
+Dendritic cell,Cd83
+Dendritic cell,H2-Ab1
+Dendritic cell,H2-DMa
+Dendritic cell,Ckb
+Dendritic cell,Cst3
+Dendritic cell,Gpr132
+Dendritic cell,Ctss
+Dendritic cell,Napsa
+T cell,Cd3g
+T cell,Cd3d
+T cell,Cd3e
+T cell,Cd4
+T cell,Gimap3
+T cell,Rps20
+T cell,Rpl12
+T cell,Trbc2
+T cell,Trbc1
+T cell,Trac
+T cell,Rps7
+T cell,Rps20
+T cell,Rpl12
+T cell,Ltb
