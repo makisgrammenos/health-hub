@@ -6,3 +6,7 @@ backend/__pycache__/
 backend/models/brain_tumor_segmentation/__pycache__/
 backend/models/diabetic_retinopathy/__pycache__/
 backend/routers/__pycache__/
+
+# Ignore all __pycache__ directories
+**/__pycache__/
+**/*.pyc
