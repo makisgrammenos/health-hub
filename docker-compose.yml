@@ -1,23 +1,43 @@
-version: "3.9"
-
 services:
+  frontend:
+    build:
+      context: ./healthhub-next
+    container_name: healthhub-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./healthhub-next:/app
+      - /app/node_modules  # Prevents host/node_modules from conflicting
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://backend:8000
+      - ENV CHOKIDAR_USEPOLLING=true
+
+    # command: npm run dev
+    depends_on:
+      - backend
+
   backend:
     build: ./backend
-    container_name: healthhub-backend
     ports:
       - "8000:8000"
     volumes:
+      - ./backend:/app
       - ./backend/models:/app/models
       - ./backend/uploads:/app/uploads
     environment:
       - PYTHONUNBUFFERED=1
 
-  frontend:
-    build: ./frontend
-    container_name: healthhub-frontend
+  clinical:
+    build: ./clinical
     ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    environment:
-      - NEXT_PUBLIC_API_BASE_URL=http://backend:8000
+      - "7000:7000"
+    volumes:
+      - ./clinical:/app
+
+  transcriptomics:
+    build: ./transcriptomics
+    ports:
+      - "7001:7001"
+    volumes:
+      - ./transcriptomics:/app
+  

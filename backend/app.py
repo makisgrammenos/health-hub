@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from routers import diabetic_retinopathy,brain_tumor_segmentation,chestXray,image_processing, covid_prediction,region_of_interset,breast_cancer,skin_cancer
 from fastapi.middleware.cors import CORSMiddleware
-from routers.clinical import preprocessing,plots,dim_reduc,classification,clustering,feature_selection
-from routers.transcriptomics import data_preprocessing,data_concatenation,data_integration,cell_annotation,expression_plots
+# from routers.clinical import preprocessing,plots,dim_reduc,classification,clustering,feature_selection
+# from routers.transcriptomics import data_preprocessing,data_concatenation,data_integration,cell_annotation,expression_plots
 # Define allowed origins
 origins = [
     "http://localhost:3000",  # Next.js development server
@@ -34,20 +34,20 @@ app.include_router(skin_cancer.router, prefix="/imaging/skin-cancer", tags=["Ski
 app.include_router(region_of_interset.router, prefix="/imaging/roi", tags=["Region of Interest"])
 
 # Clinical Routers
-app.include_router(preprocessing.router, prefix="/clinical", tags=["Clinical Data Preprocessing"])
-app.include_router(plots.router, prefix="/clinical/heart", tags=["Clinical Data Plots"])
-app.include_router(dim_reduc.router, prefix="/clinical/dim_reduction", tags=["Clinical Data Dimensionality Reduction"])
-app.include_router(classification.router, prefix="/clinical", tags=["Clinical Data Classification"])
-app.include_router(clustering.router, prefix="/clinical", tags=["Clinical Data Clustering"])
-app.include_router(feature_selection.router, prefix="/clinical", tags=["Clinical Data Feature Selection"])
+# app.include_router(preprocessing.router, prefix="/clinical", tags=["Clinical Data Preprocessing"])
+# app.include_router(plots.router, prefix="/clinical/heart", tags=["Clinical Data Plots"])
+# app.include_router(dim_reduc.router, prefix="/clinical/dim_reduction", tags=["Clinical Data Dimensionality Reduction"])
+# app.include_router(classification.router, prefix="/clinical", tags=["Clinical Data Classification"])
+# app.include_router(clustering.router, prefix="/clinical", tags=["Clinical Data Clustering"])
+# app.include_router(feature_selection.router, prefix="/clinical", tags=["Clinical Data Feature Selection"])
 
 
-# Transcriptomics Routers
-app.include_router(data_preprocessing.router, prefix="/transcriptomics", tags=["Transcriptomics Data Preprocessing"])
-app.include_router(data_concatenation.router, prefix="/transcriptomics", tags=["Transcriptomics Data Concatenation"])
-app.include_router(data_integration.router, prefix="/transcriptomics", tags=["Transcriptomics Data Integration"])
-app.include_router(cell_annotation.router, prefix="/transcriptomics", tags=["Transcriptomics Cell Annotation"])
-app.include_router(expression_plots.router, prefix="/transcriptomics", tags=["Transcriptomics Expression Plots"])
+# # Transcriptomics Routers
+# app.include_router(data_preprocessing.router, prefix="/transcriptomics", tags=["Transcriptomics Data Preprocessing"])
+# app.include_router(data_concatenation.router, prefix="/transcriptomics", tags=["Transcriptomics Data Concatenation"])
+# app.include_router(data_integration.router, prefix="/transcriptomics", tags=["Transcriptomics Data Integration"])
+# app.include_router(cell_annotation.router, prefix="/transcriptomics", tags=["Transcriptomics Cell Annotation"])
+# app.include_router(expression_plots.router, prefix="/transcriptomics", tags=["Transcriptomics Expression Plots"])
 @app.get("/")
 async def root():
     return {"message": "Welcome to the Medical Imaging Prediction API"}
