@@ -2,31 +2,22 @@ version: "3.9"
 
 services:
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: fastapi_backend
-    volumes:
-      - ./backend:/app  # Mount source code for hot reload
-      - ./backend/model_checkpoints:/app/model_checkpoints  # Mount model files
+    build: ./backend
+    container_name: healthhub-backend
     ports:
-      - "8000:8000"  # Expose FastAPI port
+      - "8000:8000"
+    volumes:
+      - ./backend/models:/app/models
+      - ./backend/uploads:/app/uploads
     environment:
       - PYTHONUNBUFFERED=1
-      - MODEL_PATH=/app/model_checkpoints/3d_brats_segmentations/model.pt
 
   frontend:
-    build:
-      context: ./healthhub-next
-      dockerfile: Dockerfile
-    container_name: nextjs_frontend
-    volumes:
-      - ./healthhub-next:/app  # Mount source code for hot reload
-      # - ./healthhub-next/app:/app/app  
-
+    build: ./frontend
+    container_name: healthhub-frontend
     ports:
-      - "3000:3000"  # Expose Next.js port
+      - "3000:3000"
+    depends_on:
+      - backend
     environment:
-      # - NEXT_PUBLIC_API_URL=http://localhost:8000  # Backend URL for frontend
-      - WATCHPACK_POLLING=true  # Enable polling for hot reload
-      - CHOKIDAR_USEPOLLING=true
+      - NEXT_PUBLIC_API_BASE_URL=http://backend:8000
