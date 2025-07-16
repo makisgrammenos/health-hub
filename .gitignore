@@ -1,5 +1,5 @@
-backend/models/diabetic_retinopathy/checkpoint.chk
-backend/models/brain_tumor_segmentation/model.pt
+# backend/models/diabetic_retinopathy/checkpoint.chk
+# backend/models/brain_tumor_segmentation/model.pt
 
 # ignore __pycache__ directories
 backend/__pycache__/
