@@ -1,15 +1,16 @@
 FROM node:22.11-alpine
 
+# Optional: Fix for watching issues (Alpine is minimal)
+RUN apk add --no-cache bash git
+
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json ./
 RUN npm install --legacy-peer-deps
 
 COPY . .
 
-EXPOSE 3000
-
-# Enable file change polling for hot reload
 ENV CHOKIDAR_USEPOLLING=true
+EXPOSE 3000
 
 CMD ["npm", "run", "dev"]

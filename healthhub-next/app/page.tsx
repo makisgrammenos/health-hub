@@ -213,7 +213,7 @@ export default function Home() {
         {/* Hero Content */}
         <div className="relative z-20 max-w-5xl mx-auto">
           <div className="flex items-center justify-center mb-4">
-            <Chip color="primary" variant="dot" className="text-white">European Digital Innovation Hub</Chip>
+            <Chip color="primary" variant="dot" className="text-white"> Digital Innovation Hub</Chip>
           </div>
 
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-6">
