@@ -1,3 +1,12 @@
 *.pth
 *.chk
 *.h5ad
+
+__pycache__/
+*.pyc
+*.pyo
+*.ipynb_checkpoints
+.idea
+.vscode
+models/
+uploads/

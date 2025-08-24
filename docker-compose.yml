@@ -1,3 +1,48 @@
+# services:
+#   frontend:
+#     build:
+#       context: ./healthhub-next
+#     container_name: healthhub-frontend
+#     ports:
+#       - "3000:3000"
+#     volumes:
+#       - ./healthhub-next:/app
+#       - /app/node_modules
+#     environment:
+#       - NEXT_PUBLIC_API_BASE_URL=http://backend:8000
+#       - CHOKIDAR_USEPOLLING=true
+#       - WATCHPACK_POLLING=true
+#       - WATCHPACK_POLLING_INTERVAL=1000
+#     command: npm run dev
+#     depends_on:
+#       - backend
+
+
+#   backend:
+#     build: ./backend
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       - ./backend:/app
+#       - ./backend/models:/app/models
+#       - ./backend/uploads:/app/uploads
+#     environment:
+#       - PYTHONUNBUFFERED=1
+
+#   clinical:
+#     build: ./clinical
+#     ports:
+#       - "7000:7000"
+#     volumes:
+#       - ./clinical:/app
+
+#   transcriptomics:
+#     build: ./transcriptomics
+#     ports:
+#       - "7001:7001"
+#     volumes:
+#       - ./transcriptomics:/app
+  
 services:
   frontend:
     build:
@@ -7,39 +52,40 @@ services:
       - "3000:3000"
     volumes:
       - ./healthhub-next:/app
-      - /app/node_modules
+      - /app/node_modules            # keep deps inside container
     environment:
       - NEXT_PUBLIC_API_BASE_URL=http://backend:8000
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - WATCHPACK_POLLING_INTERVAL=1000
-    command: npm run dev
+    # command: npm run dev
     depends_on:
       - backend
 
-
   backend:
-    build: ./backend
+    build:
+      context: ./backend
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./backend:/app               # code-only mount
       - ./backend/models:/app/models
       - ./backend/uploads:/app/uploads
     environment:
       - PYTHONUNBUFFERED=1
 
   clinical:
-    build: ./clinical
+    build:
+      context: ./clinical
     ports:
       - "7000:7000"
     volumes:
       - ./clinical:/app
 
   transcriptomics:
-    build: ./transcriptomics
+    build:
+      context: ./transcriptomics
     ports:
       - "7001:7001"
     volumes:
       - ./transcriptomics:/app
-  

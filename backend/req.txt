@@ -1,0 +1,18 @@
+# Web API
+fastapi==0.115.5
+uvicorn==0.32.1
+pydantic==2.9.2
+python-multipart==0.0.20   # for UploadFile/form-data
+
+# Core numerics & imaging
+numpy==1.26.4
+Pillow==10.4.0
+opencv-python-headless==4.10.0.84
+matplotlib==3.7.5
+
+# Medical imaging & DL stack
+nibabel==5.3.2
+pydicom==3.0.1
+torch==2.5.1
+torchvision==0.20.1
+monai==1.4.0
