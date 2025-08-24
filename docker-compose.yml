@@ -7,14 +7,16 @@ services:
       - "3000:3000"
     volumes:
       - ./healthhub-next:/app
-      - /app/node_modules  # Prevents host/node_modules from conflicting
+      - /app/node_modules
     environment:
       - NEXT_PUBLIC_API_BASE_URL=http://backend:8000
-      - ENV CHOKIDAR_USEPOLLING=true
-
-    # command: npm run dev
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - WATCHPACK_POLLING_INTERVAL=1000
+    command: npm run dev
     depends_on:
       - backend
+
 
   backend:
     build: ./backend
