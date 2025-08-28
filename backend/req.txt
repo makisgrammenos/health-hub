@@ -16,3 +16,4 @@ pydicom==3.0.1
 torch==2.5.1
 torchvision==0.20.1
 monai==1.4.0
+torchxrayvision

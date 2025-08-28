@@ -52,7 +52,7 @@ services:
       - "3000:3000"
     volumes:
       - ./healthhub-next:/app
-      - /app/node_modules            # keep deps inside container
+      # - /app/node_modules            # keep deps inside container
     environment:
       - NEXT_PUBLIC_API_BASE_URL=http://backend:8000
       - CHOKIDAR_USEPOLLING=true
