@@ -15,7 +15,7 @@ const ClassificationDemo = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:8000/clinical/classification");
+        const response = await fetch("http://localhost:7000/clinical/classification");
         if (!response.ok) throw new Error("Failed to fetch classification data");
         const data = await response.json();
         setMetrics(data.metrics);

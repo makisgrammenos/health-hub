@@ -10,7 +10,7 @@ router = APIRouter()
 def run_clustering_demo():
     try:
         # Load dataset
-        file_path = "routers/clinical/uci_hf_df.csv"
+        file_path = "uci_hf_df.csv"
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Dataset not found at {file_path}")
         

@@ -1,3 +1,13 @@
-node_modules
-.next
-dist
+
+# never send local node_modules from host
+node_modules/
+.next/
+dist/
+.cache/
+
+# images/videos you don't need at build time (optional: keep if used by next build)
+# public/hero/video.webm
+
+.git/
+.DS_Store
+.env

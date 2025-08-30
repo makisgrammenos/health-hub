@@ -14,7 +14,7 @@ tag_vals = {
 
 # Load dataset
 try:
-    df = pd.read_csv("routers/clinical/uci_hf_df.csv")
+    df = pd.read_csv("uci_hf_df.csv")
     tag = pd.DataFrame(df["tag"], columns=["tag"])
     df = df.drop(["tag"], axis=1)
     tag = tag.replace({"tag": tag_vals})

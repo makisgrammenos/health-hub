@@ -39,7 +39,7 @@ const Home = () => {
         // Display loading progress
         setLoading(true);
 
-        const rawResponse = await fetch("http://127.0.0.1:8000/clinical/heart/dataset/raw");
+        const rawResponse = await fetch("http://localhost:7000/clinical/heart/dataset/raw");
         if (!rawResponse.ok) {
           throw new Error("Failed to fetch raw dataset");
         }
@@ -59,7 +59,7 @@ const Home = () => {
           }))
         );
 
-        const processedResponse = await fetch("http://127.0.0.1:8000/clinical/heart/dataset/processed");
+        const processedResponse = await fetch("http://127.0.0.1:7000/clinical/heart/dataset/processed");
         if (!processedResponse.ok) {
           throw new Error("Failed to fetch processed dataset");
         }

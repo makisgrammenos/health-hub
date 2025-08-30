@@ -9,7 +9,7 @@ router = APIRouter()
 def run_pycaret_classification():
     try:
         # Load the dataset
-        df = pd.read_csv("routers/clinical/uci_hf_df.csv")
+        df = pd.read_csv("uci_hf_df.csv")
 
         # Setup the PyCaret environment
         s = setup(df, target='tag', session_id=123,  verbose=False)

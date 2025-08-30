@@ -36,7 +36,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Dataset file path
-DATASET_FILE = "routers/clinical/uci_hf_df.csv"  # Path to the dataset file
+DATASET_FILE = "uci_hf_df.csv"  # Path to the dataset file
 
 # Helper function for categorical conversion
 def convert_to_categorical(df, column_name, threshold):

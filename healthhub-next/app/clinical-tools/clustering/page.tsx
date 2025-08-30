@@ -19,7 +19,7 @@ const ClusteringVisualization = () => {
   useEffect(() => {
     const fetchClusteringData = async () => {
       try {
-        const response = await fetch("http://localhost:8000/clinical/clustering");
+        const response = await fetch("http://localhost:7000/clinical/clustering");
         if (!response.ok) throw new Error("Failed to fetch clustering data");
         const data = await response.json();
         setClusterAssignments(data.cluster_assignments);
@@ -164,7 +164,7 @@ const ClusteringVisualization = () => {
             <h1 className="text-xl font-bold tracking-tight">Clustering Analysis Dashboard</h1>
           </div>
           <div className="text-xs text-gray-400">
-            Data fetched from: localhost:8000/clinical/clustering
+            Data fetched from: localhost:7000/clinical/clustering
           </div>
         </div>
       </header>

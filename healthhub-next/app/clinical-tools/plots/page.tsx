@@ -53,7 +53,7 @@ const DataVisualization = () => {
        //  const categoryJson = await categoryResponse.json();
        //  console.log("Category counts data:", categoryJson); // Debug
        //  setCategoryCounts(categoryJson.category_counts || categoryJson);
-          const categoryResponse = await fetch("http://localhost:8000/clinical/heart/category_counts");
+          const categoryResponse = await fetch("http://localhost:7000/clinical/heart/category_counts");
           if (!categoryResponse.ok) throw new Error("Failed to fetch category counts");
           const categoryJson = await categoryResponse.json();
           console.log("Category counts data:", categoryJson); // Keep this debug log
@@ -61,19 +61,19 @@ const DataVisualization = () => {
 
 
         // Fetch standardized data
-        const standardizedResponse = await fetch("http://localhost:8000/clinical/heart/standardized_data");
+        const standardizedResponse = await fetch("http://localhost:7000/clinical/heart/standardized_data");
         if (!standardizedResponse.ok) throw new Error("Failed to fetch standardized data");
         const standardizedJson = await standardizedResponse.json();
         setStandardizedData(standardizedJson);
 
         // Fetch melted data
-        const meltedResponse = await fetch("http://localhost:8000/clinical/heart/melted_data");
+        const meltedResponse = await fetch("http://localhost:7000/clinical/heart/melted_data");
         if (!meltedResponse.ok) throw new Error("Failed to fetch melted data");
         const meltedJson = await meltedResponse.json();
         setMeltedData(meltedJson);
 
         // Fetch correlation matrix
-        const correlationResponse = await fetch("http://localhost:8000/clinical/heart/correlation_matrix");
+        const correlationResponse = await fetch("http://localhost:7000/clinical/heart/correlation_matrix");
         if (!correlationResponse.ok) throw new Error("Failed to fetch correlation matrix");
         const correlationJson = await correlationResponse.json();
         setCorrelationMatrix(correlationJson);

@@ -95,7 +95,7 @@ def feature_selection():
 def get_borda_results():
     try:
         # Load the dataset
-        df = pd.read_csv("routers/clinical/uci_hf_df.csv")
+        df = pd.read_csv("uci_hf_df.csv")
         tag = pd.DataFrame(df, columns=["tag"])
         df = df.drop(columns=['tag'])
 

@@ -1,12 +1,28 @@
-*.pth
-*.chk
-*.h5ad
-
+# python junk
 __pycache__/
-*.pyc
-*.pyo
-*.ipynb_checkpoints
-.idea
-.vscode
-models/
+*.py[cod]
+*.log
+
+# training artifacts & uploads
+catboost_info/
+logs.log
 uploads/
+uploaded_*.jpg
+cropped_images/
+figures/
+tree.txt
+
+# models: mount at runtime instead of baking into the image
+models/**
+
+# VCS and OS
+.git/
+.gitignore
+*.ipynb
+.DS_Store
+.env
+*.h5
+*.h5ad
+*.pth
+*.pt
+*.chk

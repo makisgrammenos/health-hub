@@ -69,7 +69,7 @@ const FeatureSelectionVisualization = () => {
         setLoading(true);
 
         // Fetch Borda results
-        const bordaResponse = await fetch("http://localhost:8000/clinical/borda_results");
+        const bordaResponse = await fetch("http://localhost:7000/clinical/borda_results");
         if (!bordaResponse.ok) throw new Error("Failed to fetch Borda results");
         const bordaJson = await bordaResponse.json();
         setBordaResults(bordaJson);

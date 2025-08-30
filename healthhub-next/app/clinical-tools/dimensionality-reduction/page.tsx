@@ -71,12 +71,12 @@ const DimReductionVisualization = () => {
         };
 
         // Fetch all datasets
-        setPca2D(await fetchDataset("http://localhost:8000/clinical/dim_reduction/pca_2d", "pca2D"));
-        setUmap2D(await fetchDataset("http://localhost:8000/clinical/dim_reduction/umap_2d", "umap2D"));
-        setTsne2D(await fetchDataset("http://localhost:8000/clinical/dim_reduction/tsne_2d", "tsne2D"));
-        setPca3D(await fetchDataset("http://localhost:8000/clinical/dim_reduction/pca_3d", "pca3D"));
-        setUmap3D(await fetchDataset("http://localhost:8000/clinical/dim_reduction/umap_3d", "umap3D"));
-        setTsne3D(await fetchDataset("http://localhost:8000/clinical/dim_reduction/tsne_3d", "tsne3D"));
+        setPca2D(await fetchDataset("http://localhost:7000/clinical/dim_reduction/pca_2d", "pca2D"));
+        setUmap2D(await fetchDataset("http://localhost:7000/clinical/dim_reduction/umap_2d", "umap2D"));
+        setTsne2D(await fetchDataset("http://localhost:7000/clinical/dim_reduction/tsne_2d", "tsne2D"));
+        setPca3D(await fetchDataset("http://localhost:7000/clinical/dim_reduction/pca_3d", "pca3D"));
+        setUmap3D(await fetchDataset("http://localhost:7000/clinical/dim_reduction/umap_3d", "umap3D"));
+        setTsne3D(await fetchDataset("http://localhost:7000/clinical/dim_reduction/tsne_3d", "tsne3D"));
       } catch (err) {
         console.error("Error fetching data:", err);
         setError(err.message);

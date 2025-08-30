@@ -17,7 +17,7 @@ TAG_VALS_NUM = {
 
 # Load dataset
 try:
-    df = pd.read_csv("routers/clinical/uci_hf_df.csv")
+    df = pd.read_csv("uci_hf_df.csv")
     df["tag"] = df["tag"].replace(TAG_VALS_CAT)
 except Exception as e:
     raise RuntimeError(f"Failed to load dataset: {str(e)}")

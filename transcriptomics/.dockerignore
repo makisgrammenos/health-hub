@@ -1,6 +1,11 @@
 __pycache__/
-*.pyc
-*.pyo
-.idea
-.vscode
-data/
+*.py[cod]
+*.log
+data/**        # <-- VERY important: don't bake datasets
+*.h5ad
+*.h5
+*.csv
+plots/
+.git/
+.DS_Store
+.env

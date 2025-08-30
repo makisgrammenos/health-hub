@@ -43,6 +43,62 @@
 #     volumes:
 #       - ./transcriptomics:/app
   
+# services:
+#   frontend:
+#     build:
+#       context: ./healthhub-next
+#     container_name: healthhub-frontend
+#     ports:
+#       - "3000:3000"
+#     volumes:
+#       - ./healthhub-next:/app
+#       - node_modules:/app/node_modules              # keep deps inside container
+#     environment:
+#       - NEXT_PUBLIC_API_BASE_URL=http://backend:8000
+#       - CHOKIDAR_USEPOLLING=true
+#       - WATCHPACK_POLLING=true
+#       - WATCHPACK_POLLING_INTERVAL=1000
+#     # command: npm run dev
+#     depends_on:
+#       - backend
+    
+
+
+#   backend:
+#     build:
+#       context: ./backend
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       - ./backend:/app               # code-only mount
+#       - ./backend/models:/app/models
+#       - ./backend/uploads:/app/uploads
+#     environment:
+#       - PYTHONUNBUFFERED=1
+
+#   clinical:
+#     build:
+#       context: ./clinical
+#     ports:
+#       - "7000:7000"
+#     volumes:
+#       - ./clinical:/app
+
+#   transcriptomics:
+#     build:
+#       context: ./transcriptomics
+#     ports:
+#       - "7001:7001"
+#     volumes:
+#       - ./transcriptomics:/app
+
+
+# volumes:
+#       node_modules:
+
+
+version: "3.9"
+
 services:
   frontend:
     build:
@@ -50,42 +106,54 @@ services:
     container_name: healthhub-frontend
     ports:
       - "3000:3000"
+    # Mount source, but keep node_modules inside the container for speed/stability
     volumes:
       - ./healthhub-next:/app
-      # - /app/node_modules            # keep deps inside container
+      - node_modules:/app/node_modules
     environment:
       - NEXT_PUBLIC_API_BASE_URL=http://backend:8000
+      - NEXT_TELEMETRY_DISABLED=1
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - WATCHPACK_POLLING_INTERVAL=1000
-    # command: npm run dev
+    command: npm run dev -- -p 3000 -H 0.0.0.0
     depends_on:
       - backend
 
   backend:
     build:
       context: ./backend
+    container_name: healthhub-backend
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app               # code-only mount
-      - ./backend/models:/app/models
-      - ./backend/uploads:/app/uploads
+      - ./backend:/app
+      - ./backend/models:/app/models:ro     # models are read-only
+      - ./backend/uploads:/app/uploads      # writable for user uploads
     environment:
       - PYTHONUNBUFFERED=1
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 
   clinical:
     build:
       context: ./clinical
+    container_name: healthhub-clinical
     ports:
       - "7000:7000"
     volumes:
       - ./clinical:/app
+    command: uvicorn app:app --host 0.0.0.0 --port 7000 --reload
 
   transcriptomics:
     build:
       context: ./transcriptomics
+    container_name: healthhub-transcriptomics
     ports:
       - "7001:7001"
     volumes:
       - ./transcriptomics:/app
+      - ./transcriptomics/data:/app/data:ro  # datasets mounted, not baked into image
+    command: uvicorn app:app --host 0.0.0.0 --port 7001 --reload
+
+volumes:
+  node_modules:

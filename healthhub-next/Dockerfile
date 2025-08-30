@@ -30,7 +30,7 @@ WORKDIR /app
 # Leverage Docker cache properly
 COPY package.json  ./
 # RUN npm ci --no-audit --no-fund
-
+RUN npm i --legacy-peer-deps
 # Now copy the rest
 COPY . .
 
