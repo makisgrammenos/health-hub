@@ -1,0 +1,13 @@
+backend/models/brain_tumor_segmentation/model.pt
+backend/models/breast_cancer/checkpoint/model.pth
+backend/models/breast_cancer/checkpoint/model/_cuda.pth
+backend/models/covidnext50/checkpoint/model.pth
+backend/models/diabetic_retinopathy/checkpoint.chk
+backend/models/skin_cancer/model.pth
+transcriptomics/data/1.H5AD_standalone/GSE161872/GSM4916244_HFD.h5ad
+transcriptomics/data/1.H5AD_standalone/GSE161872/GSM4916246_LEAN.h5ad
+transcriptomics/data/2.H5AD_filtered/GSE161872/filtered_GSM4916244_HFD.h5ad
+transcriptomics/data/2.H5AD_filtered/GSE161872/filtered_GSM4916246_LEAN.h5ad
+transcriptomics/data/3.H5AD_concatenated/GSE161872_v1.h5ad
+transcriptomics/data/4.H5AD_integrated/GSE161872_scanorama_v1.h5ad
+transcriptomics/data/5.H5AD_annotated_clusters/GSE161872_scanorama_integration_decoupleR_anno_v1.h5ad
