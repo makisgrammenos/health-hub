@@ -1,21 +1,6 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import {
-  Input,
-  Progress,
-  Slider,
-  Checkbox,
-  Select,
-  SelectItem,
-  Spacer,
-  Card,
-  CardBody,
-  CardHeader,
-  Divider,
-  Button,
-  Tooltip,
-} from '@nextui-org/react';
 
 /**
  * Medical Image Enhancement Component
@@ -41,37 +26,37 @@ export default function MedicalImageEnhancement(): JSX.Element {
   const [params, setParams] = useState({
     // Denoising parameters
     denoiseMethod: 'bilateral',
-    bilateralD: 9, // Diameter of each pixel neighborhood
-    bilateralSigmaColor: 75, // Filter sigma in the color space
-    bilateralSigmaSpace: 75, // Filter sigma in the coordinate space
-    gaussianKernelSize: 5, // Gaussian kernel size (must be odd)
-    medianKernelSize: 5, // Median filter kernel size (must be odd)
+    bilateralD: 9,
+    bilateralSigmaColor: 75,
+    bilateralSigmaSpace: 75,
+    gaussianKernelSize: 5,
+    medianKernelSize: 5,
 
     // CLAHE parameters
-    clipLimit: 2.0, // Threshold for contrast limiting
-    tileGridSize: 8, // Size of grid for histogram equalization
+    clipLimit: 2.0,
+    tileGridSize: 8,
 
     // Sharpening parameters
-    unsharpStrength: 1.5, // Strength of unsharp mask
+    unsharpStrength: 1.5,
 
     // Intensity transformation parameters
-    normalizeMin: 0, // Lower bound for normalization
-    normalizeMax: 255, // Upper bound for normalization
+    normalizeMin: 0,
+    normalizeMax: 255,
 
     // Windowing parameters (for radiological images)
-    windowWidth: 255, // Window width for contrast adjustment
-    windowCenter: 127, // Window center for brightness adjustment
+    windowWidth: 255,
+    windowCenter: 127,
 
     // Segmentation parameters
-    thresholdMin: 50, // Lower threshold boundary
-    thresholdMax: 200, // Upper threshold boundary
+    thresholdMin: 50,
+    thresholdMax: 200,
 
     // Visualization parameters
-    pseudocolorMap: 'COLORMAP_JET', // Color mapping for pseudocolor
+    pseudocolorMap: 'COLORMAP_JET',
 
     // Morphological parameters
-    kernelSize: 3, // Structuring element size (must be odd)
-    morphOperation: 'dilation', // Type of morphological operation
+    kernelSize: 3,
+    morphOperation: 'dilation',
   });
 
   // Available preprocessing methods with descriptions
@@ -92,7 +77,6 @@ export default function MedicalImageEnhancement(): JSX.Element {
 
   // WebSocket connection setup
   useEffect(() => {
-    // Establish connection to backend service
     try {
       websocketRef.current = new WebSocket('ws://localhost:8000/imaging/image-processing/ws');
 
@@ -109,7 +93,6 @@ export default function MedicalImageEnhancement(): JSX.Element {
               setLoading(false);
             }
           } catch (e) {
-            // If not JSON, expect base64 image data
             setProcessedImage(`data:image/png;base64,${event.data}`);
             setLoading(false);
           }
@@ -117,7 +100,6 @@ export default function MedicalImageEnhancement(): JSX.Element {
       };
 
       websocketRef.current.onerror = (err) => {
-        // setError('WebSocket communication error. Please check server connection.');
         console.error('WebSocket error:', err);
         setLoading(false);
       };
@@ -130,7 +112,6 @@ export default function MedicalImageEnhancement(): JSX.Element {
       console.error('WebSocket initialization error:', err);
     }
 
-    // Clean up connection on component unmount
     return () => {
       if (websocketRef.current) {
         websocketRef.current.close();
@@ -138,10 +119,6 @@ export default function MedicalImageEnhancement(): JSX.Element {
     };
   }, []);
 
-  /**
-   * Initiates the image enhancement process by sending image data and parameters
-   * to the backend processing service via WebSocket.
-   */
   const startEnhancement = useCallback(() => {
     if (!image) {
       setError('Please upload a medical image to process.');
@@ -153,7 +130,6 @@ export default function MedicalImageEnhancement(): JSX.Element {
       return;
     }
 
-    // If no active methods, show original image
     if (activeMethods.length === 0) {
       setProcessedImage(originalImage);
       return;
@@ -167,7 +143,6 @@ export default function MedicalImageEnhancement(): JSX.Element {
       if (reader.result && typeof reader.result === 'string' && websocketRef.current) {
         const base64Data = reader.result.split(',')[1];
 
-        // Send image data and processing parameters to server
         websocketRef.current.send(
           JSON.stringify({
             image: base64Data,
@@ -192,10 +167,8 @@ export default function MedicalImageEnhancement(): JSX.Element {
     reader.readAsDataURL(image);
   }, [image, params, activeMethods, originalImage]);
 
-  // Apply processing when parameters or methods change
   useEffect(() => {
     if (image) {
-      // Add debounce to avoid excessive processing
       const debounceTimeout = setTimeout(() => {
         startEnhancement();
       }, 500);
@@ -204,39 +177,26 @@ export default function MedicalImageEnhancement(): JSX.Element {
     }
   }, [image, params, activeMethods, startEnhancement]);
 
-  /**
-   * Handles image file selection and validates the uploaded file
-   * @param {React.ChangeEvent<HTMLInputElement>} event - The file input change event
-   */
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
 
     if (selectedFile) {
-      // Validate file type
       const validImageTypes = ['image/jpeg', 'image/png', 'image/dicom', 'image/tiff'];
       if (!validImageTypes.includes(selectedFile.type) && !selectedFile.name.endsWith('.dcm')) {
         setError('Please upload a valid medical image format (JPEG, PNG, DICOM, TIFF).');
         return;
       }
 
-      // Create preview and store image
       const objectUrl = URL.createObjectURL(selectedFile);
       setImage(selectedFile);
       setUploadedImagePreview(objectUrl);
       setOriginalImage(objectUrl);
       setProcessedImage(null);
       setError(null);
-
-      // Reset active methods when new image is uploaded
       setActiveMethods([]);
     }
   };
 
-  /**
-   * Updates a specific parameter value in the parameters state
-   * @param {string} name - The parameter name to update
-   * @param {any} value - The new parameter value
-   */
   const handleParamChange = (name: string, value: any) => {
     setParams((prev) => ({
       ...prev,
@@ -244,11 +204,6 @@ export default function MedicalImageEnhancement(): JSX.Element {
     }));
   };
 
-  /**
-   * Toggles an image processing method on or off
-   * @param {string} method - The method name to toggle
-   * @param {boolean} isChecked - Whether the method should be active
-   */
   const handleMethodChange = (method: string, isChecked: boolean) => {
     setActiveMethods((prev) => {
       return isChecked
@@ -257,9 +212,6 @@ export default function MedicalImageEnhancement(): JSX.Element {
     });
   };
 
-  /**
-   * Resets all parameters to their default values
-   */
   const handleResetParams = () => {
     setParams({
       denoiseMethod: 'bilateral',
@@ -283,10 +235,6 @@ export default function MedicalImageEnhancement(): JSX.Element {
     });
   };
 
-  /**
-   * Toggles all processing methods on or off
-   * @param {boolean} enable - Whether to enable or disable all methods
-   */
   const toggleAllMethods = (enable: boolean) => {
     if (enable) {
       setActiveMethods(Object.keys(methodDescriptions));
@@ -302,528 +250,559 @@ export default function MedicalImageEnhancement(): JSX.Element {
         <p className="text-sm">Advanced visualization and preprocessing tools for clinical and research applications</p>
       </header>
 
-      {/* Main Content */}
       <div className="flex flex-grow overflow-hidden">
         {/* Sidebar for Controls */}
         <aside className="w-1/3 p-4 border-r overflow-y-auto bg-white">
-          <Card className="mb-4">
-            <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-              <h2 className="text-lg font-bold">Image Input</h2>
-            </CardHeader>
-            <CardBody>
-              <Input
+          <div className="bg-white rounded-lg shadow-md mb-4 p-4">
+            <h2 className="text-lg font-bold mb-4">Image Input</h2>
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Medical Image
+              </label>
+              <input
                 type="file"
                 accept="image/*,.dcm"
                 onChange={handleImageUpload}
-                label="Upload Medical Image"
-                description="Supported formats: JPEG, PNG, DICOM, TIFF"
-                fullWidth
+                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
+              <p className="mt-1 text-sm text-gray-500">
+                Supported formats: JPEG, PNG, DICOM, TIFF
+              </p>
+            </div>
 
-              <div className="flex space-x-2 mt-4">
-                <Button
-                  size="sm"
-                  color="primary"
-                  onClick={() => toggleAllMethods(true)}
-                  disabled={!image}
-                >
-                  Enable All Methods
-                </Button>
-                <Button
-                  size="sm"
-                  color="danger"
-                  onClick={() => toggleAllMethods(false)}
-                  disabled={!image}
-                >
-                  Disable All Methods
-                </Button>
-                <Button
-                  size="sm"
-                  color="warning"
-                  onClick={handleResetParams}
-                  disabled={!image}
-                >
-                  Reset Parameters
-                </Button>
+            <div className="flex space-x-2 mt-4">
+              <button
+                onClick={() => toggleAllMethods(true)}
+                disabled={!image}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+              >
+                Enable All
+              </button>
+              <button
+                onClick={() => toggleAllMethods(false)}
+                disabled={!image}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+              >
+                Disable All
+              </button>
+              <button
+                onClick={handleResetParams}
+                disabled={!image}
+                className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+              >
+                Reset Params
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h2 className="text-lg font-bold mb-2">Processing Methods</h2>
+            <p className="text-sm text-gray-500 mb-4">Select techniques to enhance the image</p>
+
+            {/* Denoising */}
+            <div className="mb-4 pb-4 border-b">
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="denoising"
+                  checked={activeMethods.includes('denoising')}
+                  onChange={(e) => handleMethodChange('denoising', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="denoising" className="font-medium cursor-pointer">Denoising</label>
+                <span className="ml-2 text-gray-500 cursor-help text-sm" title={methodDescriptions.denoising}>ⓘ</span>
               </div>
-            </CardBody>
-          </Card>
 
-          <Card className="mb-4">
-            <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-              <h2 className="text-lg font-bold">Processing Methods</h2>
-              <p className="text-sm text-gray-500">Select techniques to enhance the image</p>
-            </CardHeader>
-            <CardBody>
-              {/* Denoising */}
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <Checkbox
-                    isSelected={activeMethods.includes('denoising')}
-                    onChange={(e) => handleMethodChange('denoising', e.target.checked)}
-                  >
-                    <span className="font-medium">Denoising</span>
-                  </Checkbox>
-                  <Tooltip content={methodDescriptions.denoising}>
-                    <span className="ml-2 text-gray-500 cursor-help text-sm">ⓘ</span>
-                  </Tooltip>
-                </div>
-
-                {activeMethods.includes('denoising') && (
-                  <div className="pl-6 mt-2">
-                    <Select
-                      label="Filter Algorithm"
-                      placeholder="Select algorithm"
+              {activeMethods.includes('denoising') && (
+                <div className="pl-6 mt-2 space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Filter Algorithm</label>
+                    <select
                       value={params.denoiseMethod}
                       onChange={(e) => handleParamChange('denoiseMethod', e.target.value)}
-                      className="mb-2"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <SelectItem key="bilateral" value="bilateral">
-                        Bilateral Filter
-                      </SelectItem>
-                      <SelectItem key="gaussian" value="gaussian">
-                        Gaussian Filter
-                      </SelectItem>
-                      <SelectItem key="median" value="median">
-                        Median Filter
-                      </SelectItem>
-                    </Select>
+                      <option value="bilateral">Bilateral Filter</option>
+                      <option value="gaussian">Gaussian Filter</option>
+                      <option value="median">Median Filter</option>
+                    </select>
+                  </div>
 
-                    {params.denoiseMethod === 'bilateral' && (
-                      <>
-                        <Slider
-                          label={`Diameter: ${params.bilateralD}`}
-                          value={[params.bilateralD]}
-                          min={3}
-                          max={25}
-                          step={2}
-                          onChange={(value) => handleParamChange('bilateralD', value[0])}
-                          className="mb-2"
+                  {params.denoiseMethod === 'bilateral' && (
+                    <>
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">Diameter: {params.bilateralD}</label>
+                        <input
+                          type="range"
+                          min="3"
+                          max="25"
+                          step="2"
+                          value={params.bilateralD}
+                          onChange={(e) => handleParamChange('bilateralD', Number(e.target.value))}
+                          className="w-full"
                         />
-                        <Slider
-                          label={`Color Sigma: ${params.bilateralSigmaColor}`}
-                          value={[params.bilateralSigmaColor]}
-                          min={10}
-                          max={150}
-                          step={5}
-                          onChange={(value) => handleParamChange('bilateralSigmaColor', value[0])}
-                          className="mb-2"
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">Color Sigma: {params.bilateralSigmaColor}</label>
+                        <input
+                          type="range"
+                          min="10"
+                          max="150"
+                          step="5"
+                          value={params.bilateralSigmaColor}
+                          onChange={(e) => handleParamChange('bilateralSigmaColor', Number(e.target.value))}
+                          className="w-full"
                         />
-                        <Slider
-                          label={`Space Sigma: ${params.bilateralSigmaSpace}`}
-                          value={[params.bilateralSigmaSpace]}
-                          min={10}
-                          max={150}
-                          step={5}
-                          onChange={(value) => handleParamChange('bilateralSigmaSpace', value[0])}
-                          className="mb-2"
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">Space Sigma: {params.bilateralSigmaSpace}</label>
+                        <input
+                          type="range"
+                          min="10"
+                          max="150"
+                          step="5"
+                          value={params.bilateralSigmaSpace}
+                          onChange={(e) => handleParamChange('bilateralSigmaSpace', Number(e.target.value))}
+                          className="w-full"
                         />
-                      </>
-                    )}
+                      </div>
+                    </>
+                  )}
 
-                    {params.denoiseMethod === 'gaussian' && (
-                      <Slider
-                        label={`Kernel Size: ${params.gaussianKernelSize}`}
-                        value={[params.gaussianKernelSize]}
-                        min={1}
-                        max={15}
-                        step={2}
-                        onChange={(value) => handleParamChange('gaussianKernelSize', value[0])}
-                        className="mb-2"
+                  {params.denoiseMethod === 'gaussian' && (
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1">Kernel Size: {params.gaussianKernelSize}</label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="15"
+                        step="2"
+                        value={params.gaussianKernelSize}
+                        onChange={(e) => handleParamChange('gaussianKernelSize', Number(e.target.value))}
+                        className="w-full"
                       />
-                    )}
+                    </div>
+                  )}
 
-                    {params.denoiseMethod === 'median' && (
-                      <Slider
-                        label={`Kernel Size: ${params.medianKernelSize}`}
-                        value={[params.medianKernelSize]}
-                        min={1}
-                        max={15}
-                        step={2}
-                        onChange={(value) => handleParamChange('medianKernelSize', value[0])}
-                        className="mb-2"
+                  {params.denoiseMethod === 'median' && (
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1">Kernel Size: {params.medianKernelSize}</label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="15"
+                        step="2"
+                        value={params.medianKernelSize}
+                        onChange={(e) => handleParamChange('medianKernelSize', Number(e.target.value))}
+                        className="w-full"
                       />
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Normalization */}
+            <div className="mb-4 pb-4 border-b">
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="normalization"
+                  checked={activeMethods.includes('normalization')}
+                  onChange={(e) => handleMethodChange('normalization', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="normalization" className="font-medium cursor-pointer">Intensity Normalization</label>
+                <span className="ml-2 text-gray-500 cursor-help text-sm" title={methodDescriptions.normalization}>ⓘ</span>
               </div>
 
-              <Divider className="my-2" />
-
-              {/* Normalization */}
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <Checkbox
-                    isSelected={activeMethods.includes('normalization')}
-                    onChange={(e) => handleMethodChange('normalization', e.target.checked)}
-                  >
-                    <span className="font-medium">Intensity Normalization</span>
-                  </Checkbox>
-                  <Tooltip content={methodDescriptions.normalization}>
-                    <span className="ml-2 text-gray-500 cursor-help text-sm">ⓘ</span>
-                  </Tooltip>
-                </div>
-
-                {activeMethods.includes('normalization') && (
-                  <div className="pl-6 mt-2">
-                    <Slider
-                      label={`Min Intensity: ${params.normalizeMin}`}
-                      value={[params.normalizeMin]}
-                      min={0}
-                      max={255}
-                      step={1}
-                      onChange={(value) => handleParamChange('normalizeMin', value[0])}
-                      className="mb-2"
-                    />
-                    <Slider
-                      label={`Max Intensity: ${params.normalizeMax}`}
-                      value={[params.normalizeMax]}
-                      min={0}
-                      max={255}
-                      step={1}
-                      onChange={(value) => handleParamChange('normalizeMax', value[0])}
-                      className="mb-2"
+              {activeMethods.includes('normalization') && (
+                <div className="pl-6 mt-2 space-y-3">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Min Intensity: {params.normalizeMin}</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="255"
+                      value={params.normalizeMin}
+                      onChange={(e) => handleParamChange('normalizeMin', Number(e.target.value))}
+                      className="w-full"
                     />
                   </div>
-                )}
-              </div>
-
-              <Divider className="my-2" />
-
-              {/* Histogram Equalization */}
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <Checkbox
-                    isSelected={activeMethods.includes('histogramEqualization')}
-                    onChange={(e) => handleMethodChange('histogramEqualization', e.target.checked)}
-                  >
-                    <span className="font-medium">Histogram Equalization</span>
-                  </Checkbox>
-                  <Tooltip content={methodDescriptions.histogramEqualization}>
-                    <span className="ml-2 text-gray-500 cursor-help text-sm">ⓘ</span>
-                  </Tooltip>
-                </div>
-
-                {activeMethods.includes('histogramEqualization') && (
-                  <div className="pl-6 mt-2">
-                    <p className="text-sm text-gray-600">Global histogram equalization with no adjustable parameters.</p>
-                  </div>
-                )}
-              </div>
-
-              <Divider className="my-2" />
-
-              {/* CLAHE */}
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <Checkbox
-                    isSelected={activeMethods.includes('clahe')}
-                    onChange={(e) => handleMethodChange('clahe', e.target.checked)}
-                  >
-                    <span className="font-medium">CLAHE</span>
-                  </Checkbox>
-                  <Tooltip content={methodDescriptions.clahe}>
-                    <span className="ml-2 text-gray-500 cursor-help text-sm">ⓘ</span>
-                  </Tooltip>
-                </div>
-
-                {activeMethods.includes('clahe') && (
-                  <div className="pl-6 mt-2">
-                    <Slider
-                      label={`Clip Limit: ${params.clipLimit.toFixed(1)}`}
-                      value={[params.clipLimit]}
-                      min={0.5}
-                      max={8.0}
-                      step={0.1}
-                      onChange={(value) => handleParamChange('clipLimit', value[0])}
-                      className="mb-2"
-                    />
-                    <Slider
-                      label={`Tile Grid Size: ${params.tileGridSize}`}
-                      value={[params.tileGridSize]}
-                      min={2}
-                      max={16}
-                      step={2}
-                      onChange={(value) => handleParamChange('tileGridSize', value[0])}
-                      className="mb-2"
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Max Intensity: {params.normalizeMax}</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="255"
+                      value={params.normalizeMax}
+                      onChange={(e) => handleParamChange('normalizeMax', Number(e.target.value))}
+                      className="w-full"
                     />
                   </div>
-                )}
+                </div>
+              )}
+            </div>
+
+            {/* Histogram Equalization */}
+            <div className="mb-4 pb-4 border-b">
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="histogramEqualization"
+                  checked={activeMethods.includes('histogramEqualization')}
+                  onChange={(e) => handleMethodChange('histogramEqualization', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="histogramEqualization" className="font-medium cursor-pointer">Histogram Equalization</label>
+                <span className="ml-2 text-gray-500 cursor-help text-sm" title={methodDescriptions.histogramEqualization}>ⓘ</span>
               </div>
 
-              <Divider className="my-2" />
-
-              {/* Unsharp Masking */}
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <Checkbox
-                    isSelected={activeMethods.includes('unsharpMasking')}
-                    onChange={(e) => handleMethodChange('unsharpMasking', e.target.checked)}
-                  >
-                    <span className="font-medium">Edge Enhancement</span>
-                  </Checkbox>
-                  <Tooltip content={methodDescriptions.unsharpMasking}>
-                    <span className="ml-2 text-gray-500 cursor-help text-sm">ⓘ</span>
-                  </Tooltip>
+              {activeMethods.includes('histogramEqualization') && (
+                <div className="pl-6 mt-2">
+                  <p className="text-sm text-gray-600">Global histogram equalization with no adjustable parameters.</p>
                 </div>
+              )}
+            </div>
 
-                {activeMethods.includes('unsharpMasking') && (
-                  <div className="pl-6 mt-2">
-                    <Slider
-                      label={`Strength: ${params.unsharpStrength.toFixed(1)}`}
-                      value={[params.unsharpStrength]}
-                      min={0.1}
-                      max={5.0}
-                      step={0.1}
-                      onChange={(value) => handleParamChange('unsharpStrength', value[0])}
-                      className="mb-2"
-                    />
-                    <Slider
-                      label={`Blur Radius: ${params.gaussianKernelSize}`}
-                      value={[params.gaussianKernelSize]}
-                      min={3}
-                      max={15}
-                      step={2}
-                      onChange={(value) => handleParamChange('gaussianKernelSize', value[0])}
-                      className="mb-2"
+            {/* CLAHE */}
+            <div className="mb-4 pb-4 border-b">
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="clahe"
+                  checked={activeMethods.includes('clahe')}
+                  onChange={(e) => handleMethodChange('clahe', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="clahe" className="font-medium cursor-pointer">CLAHE</label>
+                <span className="ml-2 text-gray-500 cursor-help text-sm" title={methodDescriptions.clahe}>ⓘ</span>
+              </div>
+
+              {activeMethods.includes('clahe') && (
+                <div className="pl-6 mt-2 space-y-3">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Clip Limit: {params.clipLimit.toFixed(1)}</label>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="8.0"
+                      step="0.1"
+                      value={params.clipLimit}
+                      onChange={(e) => handleParamChange('clipLimit', Number(e.target.value))}
+                      className="w-full"
                     />
                   </div>
-                )}
-              </div>
-
-              <Divider className="my-2" />
-
-              {/* Windowing */}
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <Checkbox
-                    isSelected={activeMethods.includes('windowing')}
-                    onChange={(e) => handleMethodChange('windowing', e.target.checked)}
-                  >
-                    <span className="font-medium">Radiological Windowing</span>
-                  </Checkbox>
-                  <Tooltip content={methodDescriptions.windowing}>
-                    <span className="ml-2 text-gray-500 cursor-help text-sm">ⓘ</span>
-                  </Tooltip>
-                </div>
-
-                {activeMethods.includes('windowing') && (
-                  <div className="pl-6 mt-2">
-                    <Slider
-                      label={`Window Width: ${params.windowWidth}`}
-                      value={[params.windowWidth]}
-                      min={1}
-                      max={512}
-                      step={1}
-                      onChange={(value) => handleParamChange('windowWidth', value[0])}
-                      className="mb-2"
-                    />
-                    <Slider
-                      label={`Window Center: ${params.windowCenter}`}
-                      value={[params.windowCenter]}
-                      min={1}
-                      max={512}
-                      step={1}
-                      onChange={(value) => handleParamChange('windowCenter', value[0])}
-                      className="mb-2"
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Tile Grid Size: {params.tileGridSize}</label>
+                    <input
+                      type="range"
+                      min="2"
+                      max="16"
+                      step="2"
+                      value={params.tileGridSize}
+                      onChange={(e) => handleParamChange('tileGridSize', Number(e.target.value))}
+                      className="w-full"
                     />
                   </div>
-                )}
+                </div>
+              )}
+            </div>
+
+            {/* Edge Enhancement */}
+            <div className="mb-4 pb-4 border-b">
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="unsharpMasking"
+                  checked={activeMethods.includes('unsharpMasking')}
+                  onChange={(e) => handleMethodChange('unsharpMasking', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="unsharpMasking" className="font-medium cursor-pointer">Edge Enhancement</label>
+                <span className="ml-2 text-gray-500 cursor-help text-sm" title={methodDescriptions.unsharpMasking}>ⓘ</span>
               </div>
 
-              <Divider className="my-2" />
-
-              {/* Threshold Segmentation */}
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <Checkbox
-                    isSelected={activeMethods.includes('thresholdSegmentation')}
-                    onChange={(e) => handleMethodChange('thresholdSegmentation', e.target.checked)}
-                  >
-                    <span className="font-medium">Threshold Segmentation</span>
-                  </Checkbox>
-                  <Tooltip content={methodDescriptions.thresholdSegmentation}>
-                    <span className="ml-2 text-gray-500 cursor-help text-sm">ⓘ</span>
-                  </Tooltip>
-                </div>
-
-                {activeMethods.includes('thresholdSegmentation') && (
-                  <div className="pl-6 mt-2">
-                    <Slider
-                      label={`Lower Threshold: ${params.thresholdMin}`}
-                      value={[params.thresholdMin]}
-                      min={0}
-                      max={255}
-                      step={1}
-                      onChange={(value) => handleParamChange('thresholdMin', value[0])}
-                      className="mb-2"
-                    />
-                    <Slider
-                      label={`Upper Threshold: ${params.thresholdMax}`}
-                      value={[params.thresholdMax]}
-                      min={0}
-                      max={255}
-                      step={1}
-                      onChange={(value) => handleParamChange('thresholdMax', value[0])}
-                      className="mb-2"
+              {activeMethods.includes('unsharpMasking') && (
+                <div className="pl-6 mt-2 space-y-3">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Strength: {params.unsharpStrength.toFixed(1)}</label>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="5.0"
+                      step="0.1"
+                      value={params.unsharpStrength}
+                      onChange={(e) => handleParamChange('unsharpStrength', Number(e.target.value))}
+                      className="w-full"
                     />
                   </div>
-                )}
+                </div>
+              )}
+            </div>
+
+            {/* Windowing */}
+            <div className="mb-4 pb-4 border-b">
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="windowing"
+                  checked={activeMethods.includes('windowing')}
+                  onChange={(e) => handleMethodChange('windowing', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="windowing" className="font-medium cursor-pointer">Radiological Windowing</label>
+                <span className="ml-2 text-gray-500 cursor-help text-sm" title={methodDescriptions.windowing}>ⓘ</span>
               </div>
 
-              <Divider className="my-2" />
-
-              {/* Pseudocolor */}
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <Checkbox
-                    isSelected={activeMethods.includes('pseudocolor')}
-                    onChange={(e) => handleMethodChange('pseudocolor', e.target.checked)}
-                  >
-                    <span className="font-medium">Pseudocolor Mapping</span>
-                  </Checkbox>
-                  <Tooltip content={methodDescriptions.pseudocolor}>
-                    <span className="ml-2 text-gray-500 cursor-help text-sm">ⓘ</span>
-                  </Tooltip>
-                </div>
-
-                {activeMethods.includes('pseudocolor') && (
-                  <div className="pl-6 mt-2">
-                    <Select
-                      label="Color Map"
-                      placeholder="Select color map"
-                      value={params.pseudocolorMap}
-                      onChange={(e) => handleParamChange('pseudocolorMap', e.target.value)}
-                      className="mb-2"
-                    >
-                      <SelectItem key="COLORMAP_JET" value="COLORMAP_JET">Jet</SelectItem>
-                      <SelectItem key="COLORMAP_VIRIDIS" value="COLORMAP_VIRIDIS">Viridis</SelectItem>
-                      <SelectItem key="COLORMAP_HOT" value="COLORMAP_HOT">Hot</SelectItem>
-                      <SelectItem key="COLORMAP_BONE" value="COLORMAP_BONE">Bone</SelectItem>
-                      <SelectItem key="COLORMAP_PLASMA" value="COLORMAP_PLASMA">Plasma</SelectItem>
-                      <SelectItem key="COLORMAP_INFERNO" value="COLORMAP_INFERNO">Inferno</SelectItem>
-                      <SelectItem key="COLORMAP_MAGMA" value="COLORMAP_MAGMA">Magma</SelectItem>
-                      <SelectItem key="COLORMAP_CIVIDIS" value="COLORMAP_CIVIDIS">Cividis</SelectItem>
-                      <SelectItem key="COLORMAP_RAINBOW" value="COLORMAP_RAINBOW">Rainbow</SelectItem>
-                      <SelectItem key="COLORMAP_OCEAN" value="COLORMAP_OCEAN">Ocean</SelectItem>
-                      <SelectItem key="COLORMAP_TURBO" value="COLORMAP_TURBO">Turbo</SelectItem>
-                    </Select>
+              {activeMethods.includes('windowing') && (
+                <div className="pl-6 mt-2 space-y-3">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Window Width: {params.windowWidth}</label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="512"
+                      value={params.windowWidth}
+                      onChange={(e) => handleParamChange('windowWidth', Number(e.target.value))}
+                      className="w-full"
+                    />
                   </div>
-                )}
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Window Center: {params.windowCenter}</label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="512"
+                      value={params.windowCenter}
+                      onChange={(e) => handleParamChange('windowCenter', Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Threshold Segmentation */}
+            <div className="mb-4 pb-4 border-b">
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="thresholdSegmentation"
+                  checked={activeMethods.includes('thresholdSegmentation')}
+                  onChange={(e) => handleMethodChange('thresholdSegmentation', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="thresholdSegmentation" className="font-medium cursor-pointer">Threshold Segmentation</label>
+                <span className="ml-2 text-gray-500 cursor-help text-sm" title={methodDescriptions.thresholdSegmentation}>ⓘ</span>
               </div>
 
-              <Divider className="my-2" />
-
-              {/* Morphological Operations */}
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <Checkbox
-                    isSelected={activeMethods.includes('morphologicalOperations')}
-                    onChange={(e) => handleMethodChange('morphologicalOperations', e.target.checked)}
-                  >
-                    <span className="font-medium">Morphological Operations</span>
-                  </Checkbox>
-                  <Tooltip content={methodDescriptions.morphologicalOperations}>
-                    <span className="ml-2 text-gray-500 cursor-help text-sm">ⓘ</span>
-                  </Tooltip>
+              {activeMethods.includes('thresholdSegmentation') && (
+                <div className="pl-6 mt-2 space-y-3">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Lower Threshold: {params.thresholdMin}</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="255"
+                      value={params.thresholdMin}
+                      onChange={(e) => handleParamChange('thresholdMin', Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Upper Threshold: {params.thresholdMax}</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="255"
+                      value={params.thresholdMax}
+                      onChange={(e) => handleParamChange('thresholdMax', Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
+              )}
+            </div>
 
-                {activeMethods.includes('morphologicalOperations') && (
-                  <div className="pl-6 mt-2">
-                    <Select
-                      label="Operation Type"
-                      placeholder="Select operation"
+            {/* Pseudocolor */}
+            <div className="mb-4 pb-4 border-b">
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="pseudocolor"
+                  checked={activeMethods.includes('pseudocolor')}
+                  onChange={(e) => handleMethodChange('pseudocolor', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="pseudocolor" className="font-medium cursor-pointer">Pseudocolor Mapping</label>
+                <span className="ml-2 text-gray-500 cursor-help text-sm" title={methodDescriptions.pseudocolor}>ⓘ</span>
+              </div>
+
+              {activeMethods.includes('pseudocolor') && (
+                <div className="pl-6 mt-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Color Map</label>
+                  <select
+                    value={params.pseudocolorMap}
+                    onChange={(e) => handleParamChange('pseudocolorMap', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="COLORMAP_JET">Jet</option>
+                    <option value="COLORMAP_VIRIDIS">Viridis</option>
+                    <option value="COLORMAP_HOT">Hot</option>
+                    <option value="COLORMAP_BONE">Bone</option>
+                    <option value="COLORMAP_PLASMA">Plasma</option>
+                    <option value="COLORMAP_INFERNO">Inferno</option>
+                    <option value="COLORMAP_MAGMA">Magma</option>
+                    <option value="COLORMAP_CIVIDIS">Cividis</option>
+                    <option value="COLORMAP_RAINBOW">Rainbow</option>
+                    <option value="COLORMAP_OCEAN">Ocean</option>
+                    <option value="COLORMAP_TURBO">Turbo</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Morphological Operations */}
+            <div className="mb-4">
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="morphologicalOperations"
+                  checked={activeMethods.includes('morphologicalOperations')}
+                  onChange={(e) => handleMethodChange('morphologicalOperations', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="morphologicalOperations" className="font-medium cursor-pointer">Morphological Operations</label>
+                <span className="ml-2 text-gray-500 cursor-help text-sm" title={methodDescriptions.morphologicalOperations}>ⓘ</span>
+              </div>
+
+              {activeMethods.includes('morphologicalOperations') && (
+                <div className="pl-6 mt-2 space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Operation Type</label>
+                    <select
                       value={params.morphOperation}
                       onChange={(e) => handleParamChange('morphOperation', e.target.value)}
-                      className="mb-2"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <SelectItem key="dilation" value="dilation">Dilation</SelectItem>
-                      <SelectItem key="erosion" value="erosion">Erosion</SelectItem>
-                      <SelectItem key="opening" value="opening">Opening</SelectItem>
-                      <SelectItem key="closing" value="closing">Closing</SelectItem>
-                      <SelectItem key="gradient" value="gradient">Morphological Gradient</SelectItem>
-                      <SelectItem key="tophat" value="tophat">Top Hat</SelectItem>
-                      <SelectItem key="blackhat" value="blackhat">Black Hat</SelectItem>
-                    </Select>
-                    <Slider
-                      label={`Kernel Size: ${params.kernelSize}`}
-                      value={[params.kernelSize]}
-                      min={1}
-                      max={15}
-                      step={2}
-                      onChange={(value) => handleParamChange('kernelSize', value[0])}
-                      className="mb-2"
+                      <option value="dilation">Dilation</option>
+                      <option value="erosion">Erosion</option>
+                      <option value="opening">Opening</option>
+                      <option value="closing">Closing</option>
+                      <option value="gradient">Morphological Gradient</option>
+                      <option value="tophat">Top Hat</option>
+                      <option value="blackhat">Black Hat</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Kernel Size: {params.kernelSize}</label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="15"
+                      step="2"
+                      value={params.kernelSize}
+                      onChange={(e) => handleParamChange('kernelSize', Number(e.target.value))}
+                      className="w-full"
                     />
                   </div>
-                )}
-              </div>
-            </CardBody>
-          </Card>
+                </div>
+              )}
+            </div>
+          </div>
         </aside>
 
         {/* Main Image Display Area */}
         <main className="flex-1 p-4 flex flex-col items-center justify-center bg-gray-100">
           {/* Processing indicator */}
           {loading && (
-            <Card className="w-full max-w-md p-4">
-              <CardBody className="flex flex-col items-center">
-                <Progress
-                  indeterminated
-                  color="primary"
-                  className="w-full mb-4"
-                  aria-label="Processing image..."
-                />
+            <div className="w-full max-w-md p-4 bg-white rounded-lg shadow-md">
+              <div className="flex flex-col items-center">
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                  <div className="bg-blue-600 h-2.5 rounded-full animate-pulse" style={{ width: '45%' }}></div>
+                </div>
                 <p className="text-center text-gray-700">
                   Applying image processing algorithms...
                 </p>
-              </CardBody>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Processed image display */}
           {!loading && processedImage && (
-            <Card className="w-full max-w-4xl">
-              <CardHeader className="pb-0 pt-2 px-4">
-                <h2 className="text-lg font-bold">Enhanced Image</h2>
-                <p className="text-sm text-gray-600">
-                  Applied methods: {activeMethods.length > 0 ?
-                    activeMethods.map(method => method.charAt(0).toUpperCase() + method.slice(1)).join(', ') :
-                    'None (showing original)'}
-                </p>
-              </CardHeader>
-              <CardBody className="flex justify-center py-4">
+            <div className="w-full max-w-4xl bg-white rounded-lg shadow-md">
+              <div className="p-4 border-b flex justify-between items-start">
+                <div>
+                  <h2 className="text-lg font-bold">Enhanced Image</h2>
+                  <p className="text-sm text-gray-600">
+                    Applied methods: {activeMethods.length > 0 ?
+                      activeMethods.map(method => method.charAt(0).toUpperCase() + method.slice(1)).join(', ') :
+                      'None (showing original)'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = processedImage;
+                    link.download = `enhanced_image_${Date.now()}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Download
+                </button>
+              </div>
+              <div className="p-4 flex justify-center">
                 <img
                   src={processedImage}
                   alt="Processed Medical Image"
                   className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-md"
                 />
-              </CardBody>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Original image display */}
           {!loading && !processedImage && uploadedImagePreview && (
-            <Card className="w-full max-w-4xl">
-              <CardHeader className="pb-0 pt-2 px-4">
+            <div className="w-full max-w-4xl bg-white rounded-lg shadow-md">
+              <div className="p-4 border-b">
                 <h2 className="text-lg font-bold">Original Image</h2>
                 <p className="text-sm text-gray-600">
                   Select preprocessing methods from the sidebar to enhance this image
                 </p>
-              </CardHeader>
-              <CardBody className="flex justify-center py-4">
+              </div>
+              <div className="p-4 flex justify-center">
                 <img
                   src={uploadedImagePreview}
                   alt="Original Medical Image"
                   className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-md"
                 />
-              </CardBody>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* No image uploaded state */}
           {!loading && !uploadedImagePreview && (
-            <Card className="w-full max-w-md p-6 bg-gray-50">
-              <CardBody className="flex flex-col items-center text-center">
+            <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+              <div className="flex flex-col items-center text-center">
                 <div className="p-6 bg-blue-100 rounded-full mb-4">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -849,14 +828,14 @@ export default function MedicalImageEnhancement(): JSX.Element {
                 <p className="text-sm text-gray-500 max-w-xs">
                   Supported formats include DICOM, JPEG, PNG, and TIFF files from various imaging modalities
                 </p>
-              </CardBody>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Error state */}
           {error && (
-            <Card className="w-full max-w-md mt-4 bg-red-50">
-              <CardBody className="flex items-center">
+            <div className="w-full max-w-md mt-4 bg-red-50 rounded-lg shadow-md p-4">
+              <div className="flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -867,7 +846,7 @@ export default function MedicalImageEnhancement(): JSX.Element {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="text-red-600 mr-2"
+                  className="text-red-600 mr-2 flex-shrink-0"
                 >
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" x2="12" y1="8" y2="12"></line>
@@ -876,24 +855,10 @@ export default function MedicalImageEnhancement(): JSX.Element {
                 <p className="text-red-700">
                   {error}
                 </p>
-              </CardBody>
-            </Card>
+              </div>
+            </div>
           )}
         </main>
       </div>
-
-      {/* Footer with academic citations */}
-      {/*<footer className="p-4 bg-gray-200 text-sm text-gray-600">*/}
-      {/*  <div className="max-w-5xl mx-auto">*/}
-      {/*    <h3 className="font-bold mb-1">References:</h3>*/}
-      {/*    <ul className="list-disc pl-5">*/}
-      {/*      <li>Gonzalez R.C., Woods R.E. (2018). "Digital Image Processing." 4th Edition, Pearson.</li>*/}
-      {/*      <li>Pizer S.M., et al. (1987). "Adaptive Histogram Equalization and Its Variations." Computer Vision, Graphics, and Image Processing, 39(3), 355-368.</li>*/}
-      {/*      <li>Bankman I.N. (2008). "Handbook of Medical Image Processing and Analysis." 2nd Edition, Academic Press.</li>*/}
-      {/*      <li>Wang Z., Bovik A.C. (2009). "Mean squared error: Love it or leave it?" IEEE Signal Processing Magazine, 26(1), 98-117.</li>*/}
-      {/*    </ul>*/}
-      {/*  </div>*/}
-      {/*</footer>*/}
     </div>
   );
-}

@@ -131,23 +131,23 @@ const ScientificServices = () => {
     },
     {
       id: "BC-001",
-      title: "Invasive Ductal Carcinoma Detection",
-      modality: "pathology",
-      imagePath: "/modalities_thumbnails/breast-cancer.jpg",
-      description: "Whole-slide image analysis for IDC detection and Nottingham grading in breast tissue specimens",
-      path: "/imaging-modalities/invasive-ductal-carcinoma",
+      title: "Breast Density Estimation",
+      modality: "Mammography",
+      imagePath: "/modalities_thumbnails/mammograph.jpg",
+      description: "Automated breast density estimation from mammographic images based on BI-RADS A–D categories.",
+      path: "/imaging-modalities/breast-density",
       specifications: {
-        sensitivity: "93.5%",
-        specificity: "92.8%",
-        auc: "0.956",
-        processingTime: "380ms/patch",
-        validation: "TCGA-BRCA cohort"
+        sensitivity: "94.1%",
+        specificity: "93.7%",
+        auc: "0.96",
+        processingTime: "120ms/image",
+        validation: "Mayo Clinic dataset"
       },
       technical: {
         algorithm: "Inception-v3",
-        input: "H&E stained WSI (40x)",
-        output: "Grade (1-3) + confidence map",
-        standards: "DICOM, SVS"
+        input: "Mammography images (JPEG, PNG, DICOM)",
+        output: "Breast density classification (BI-RADS A, B, C, D)",
+        standards: "DICOM"
       }
     },
     {

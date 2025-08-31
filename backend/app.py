@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import diabetic_retinopathy,brain_tumor_segmentation,chestXray,image_processing, covid_prediction,region_of_interset,breast_cancer,skin_cancer
+from routers import diabetic_retinopathy,brain_tumor_segmentation,chestXray,image_processing, covid_prediction,region_of_interset,breast_cancer,skin_cancer,breast_denisity,pancreas_seg
 from fastapi.middleware.cors import CORSMiddleware
 # from routers.clinical import preprocessing,plots,dim_reduc,classification,clustering,feature_selection
 # from routers.transcriptomics import data_preprocessing,data_concatenation,data_integration,cell_annotation,expression_plots
@@ -32,6 +32,8 @@ app.include_router(covid_prediction.router, prefix="/imaging/covid", tags=["COVI
 app.include_router(breast_cancer.router, prefix="/imaging/breast-cancer", tags=["Breast Cancer Prediction"])
 app.include_router(skin_cancer.router, prefix="/imaging/skin-cancer", tags=["Skin Cancer Prediction"])
 app.include_router(region_of_interset.router, prefix="/imaging/roi", tags=["Region of Interest"])
+app.include_router(breast_denisity.router, prefix="/imaging/breast-density", tags=["Breast Density Prediction"])
+app.include_router(pancreas_seg.router, prefix="/imaging/pancreas-tumor", tags=["Pancreas Segmentation"])
 
 # Clinical Routers
 # app.include_router(preprocessing.router, prefix="/clinical", tags=["Clinical Data Preprocessing"])
